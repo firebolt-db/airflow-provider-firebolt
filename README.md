@@ -1,1 +1,1 @@
-# firebolt-airflow-provider
+# airflow-provider-firebolt
