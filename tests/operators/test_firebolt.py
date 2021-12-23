@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import pytest
 import unittest
 from unittest import mock
 
@@ -35,3 +36,21 @@ class TestFireboltOperator(unittest.TestCase):
         mock_hook.return_value.run.assert_called_once_with(
             sql=sql, autocommit=autocommit, parameters=parameters
         )
+
+@pytest.mark.parametrize(
+    "operator_class, kwargs",
+    [
+        (FireboltOperator, dict(sql='Select * from test_table')),
+    ],
+)
+class TestGetDBHook:
+    @mock.patch("airflow.providers.firebolt.operators.firebolt.get_db_hook")
+    def test_get_db_hook(
+        self,
+        mock_get_db_hook,
+        operator_class,
+        kwargs,
+    ):
+        operator = operator_class(task_id='test_task_id', firebolt_conn_id='firebolt_default', **kwargs)
+        operator.get_db_hook()
+        mock_get_db_hook.assert_called_once()
