@@ -16,15 +16,13 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-from contextlib import closing
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, List
 
 from firebolt.client import DEFAULT_API_URL
 from firebolt.db import Connection, connect
 from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
 from flask_babel import lazy_gettext
 from wtforms import StringField
-
 from airflow.hooks.dbapi import DbApiHook
 
 
@@ -85,7 +83,8 @@ class FireboltHook(DbApiHook):
         One method to fetch connection params as a dict
         used in get_uri() and get_connection()
         """
-        conn = self.get_connection(self.firebolt_conn_id)  # type: ignore[attr-defined]
+        conn_id = getattr(self, self.conn_name_attr)
+        conn = self.get_connection(conn_id)
         database = conn.schema
         engine_name = conn.extra_dejson.get('extra__firebolt__engine__name', '') or conn.extra_dejson.get(
             'engine_name', ''
@@ -105,7 +104,7 @@ class FireboltHook(DbApiHook):
         conn = connect(**conn_config)
         return conn
 
-    def run(self, sql: Union[str, list], autocommit: bool = False, parameters: Optional[dict] = None):
+    def run(self, sql: Union[str, List], autocommit: bool = False, parameters: Optional[Dict] = None) -> None:
         """
         Runs a command or a list of commands. Pass a list of sql
         statements to the sql parameter to get them to execute
@@ -122,21 +121,15 @@ class FireboltHook(DbApiHook):
         scalar = isinstance(sql, str)
         if scalar:
             sql = [sql]
-        with closing(self.get_conn()) as conn:
-            for query in sql:
-                self.log.info(query)
-                with closing(conn.cursor()) as cursor:
-                    for sql_statement in sql:
-                        if parameters:
-                            cursor.execute(sql_statement, parameters)
-                        else:
-                            cursor.execute(sql_statement)
-                        execution_info = []
-                        if cursor.rowcount > 0:
-                            for row in cursor:
-                                execution_info.append(row)
-                        self.log.info(f"Rows affected: {cursor.rowcount}")
-        return execution_info
+        with self.get_conn() as conn:
+            with conn.cursor() as cursor:
+                for sql_statement in sql:
+                    self.log.info(f"Running statement: {sql_statement}, parameters: {parameters}")
+                    if parameters:
+                        cursor.execute(sql_statement, parameters)
+                    else:
+                        cursor.execute(sql_statement)
+                    self.log.info(f"Rows affected: {cursor.rowcount}")
 
     def test_connection(self):
         """Test the Firebolt connection by running a simple query."""
