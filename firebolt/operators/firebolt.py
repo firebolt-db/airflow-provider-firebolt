@@ -18,7 +18,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.providers.firebolt.hooks.firebolt import FireboltHook
+from firebolt.hooks.firebolt import FireboltHook
 
 
 def get_db_hook(self) -> FireboltHook:
