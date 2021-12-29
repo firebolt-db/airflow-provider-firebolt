@@ -29,7 +29,7 @@ FIREBOLT_DATABASE = 'Sigmoid_Alchemy'
 FIREBOLT_ENGINE = 'Sigmoid_Alchemy_Ingest'
 
 # SQL commands
-CREATE_TABLE_SQL_STRING = f"SELECT * FROM {FIREBOLT_SAMPLE_TABLE} LIMIT 1;"
+SELECT_STATEMENT_SQL_STRING = f"SELECT * FROM {FIREBOLT_SAMPLE_TABLE} LIMIT 1;"
 SQL_INSERT_STATEMENT = (
     f"INSERT INTO {FIREBOLT_SAMPLE_TABLE} values (92,'Oil - Shortening - All - Purpose',"
     f"6928105225,5,4784.12,'2019-06-05','2019-06-05 04:02:08',1); "
@@ -55,7 +55,7 @@ dag = DAG(
 firebolt_op_sql_str = FireboltOperator(
     task_id='firebolt_op_sql_str',
     dag=dag,
-    sql=CREATE_TABLE_SQL_STRING,
+    sql=SELECT_STATEMENT_SQL_STRING,
 )
 
 firebolt_op_with_params = FireboltOperator(
