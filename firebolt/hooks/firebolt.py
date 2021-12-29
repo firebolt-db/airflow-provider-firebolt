@@ -16,24 +16,23 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-from typing import Any, Dict, Optional, Union, List
+
+import json
+from contextlib import closing
+from typing import Dict, List, Optional, Union
 
 from firebolt.client import DEFAULT_API_URL
 from firebolt.db import Connection, connect
-from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
-from flask_babel import lazy_gettext
-from wtforms import StringField
+
 from airflow.hooks.dbapi import DbApiHook
 
 
 class FireboltHook(DbApiHook):
     """
     A client to interact with Firebolt.
-
     This hook requires the firebolt_conn_id connection. The firebolt login,
-    password, and api_endpoint field must be setup in the connection. Other inputs can be defined
-    in the connection or hook instantiation.
-
+    password, and api_endpoint field must be setup in the connection.
+    Other inputs can be defined in the connection or hook instantiation.
     :param firebolt_conn_id: Reference to
         :ref:`Firebolt connection id<howto/connection:firebolt>`
     :type firebolt_conn_id: str
@@ -49,26 +48,21 @@ class FireboltHook(DbApiHook):
     hook_name = 'Firebolt'
 
     @staticmethod
-    def get_connection_form_widgets() -> Dict[str, Any]:
-        """Returns connection widgets to add to connection form"""
-        return {
-            "extra__firebolt__engine__name": StringField(
-                lazy_gettext('Engine Name'), widget=BS3TextFieldWidget()
-            ),
-        }
-
-    @staticmethod
     def get_ui_field_behaviour() -> Dict:
         """Returns custom field behaviour"""
         return {
-            "hidden_fields": ['port', 'extra'],
+            "hidden_fields": ['port'],
             "relabeling": {'schema': 'Database', 'host': 'API End Point'},
             "placeholders": {
                 'host': 'firebolt api end point',
                 'schema': 'firebolt database',
                 'login': 'firebolt userid',
                 'password': 'password',
-                'extra__firebolt__engine__name': 'firebolt engine name',
+                'extra': json.dumps(
+                    {
+                        "engine_name": "firebolt engine name",
+                    },
+                ),
             },
         }
 
@@ -86,9 +80,7 @@ class FireboltHook(DbApiHook):
         conn_id = getattr(self, self.conn_name_attr)
         conn = self.get_connection(conn_id)
         database = conn.schema
-        engine_name = conn.extra_dejson.get('extra__firebolt__engine__name', '') or conn.extra_dejson.get(
-            'engine_name', ''
-        )
+        engine_name = conn.extra_dejson.get('engine_name', '')
         conn_config = {
             "username": conn.login,
             "password": conn.password or '',
@@ -104,7 +96,12 @@ class FireboltHook(DbApiHook):
         conn = connect(**conn_config)
         return conn
 
-    def run(self, sql: Union[str, List], autocommit: bool = False, parameters: Optional[Dict] = None) -> None:
+    def run(
+        self,
+        sql: Union[str, List],
+        autocommit: bool = False,
+        parameters: Optional[Dict] = None
+    ) -> None:
         """
         Runs a command or a list of commands. Pass a list of sql
         statements to the sql parameter to get them to execute
@@ -121,10 +118,9 @@ class FireboltHook(DbApiHook):
         scalar = isinstance(sql, str)
         if scalar:
             sql = [sql]
-        with self.get_conn() as conn:
-            with conn.cursor() as cursor:
+        with closing(self.get_conn()) as conn:
+            with closing(conn.cursor()) as cursor:
                 for sql_statement in sql:
-                    self.log.info(f"Running statement: {sql_statement}, parameters: {parameters}")
                     if parameters:
                         cursor.execute(sql_statement, parameters)
                     else:

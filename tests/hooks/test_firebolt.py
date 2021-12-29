@@ -32,7 +32,7 @@ class TestFireboltHookConn(unittest.TestCase):
         self.connection.password = 'pw'
         self.connection.schema = 'firebolt'
         self.connection.host = 'api_endpoint'
-        self.connection.extra_dejson = {'engine_name': ''}
+        self.connection.extra_dejson = {'engine_name': 'test'}
 
         class UnitTestFireboltHook(FireboltHook):
             conn_name_attr = 'firebolt_conn_id'
@@ -45,7 +45,11 @@ class TestFireboltHookConn(unittest.TestCase):
     def test_get_conn(self, mock_connect):
         self.db_hook.get_conn()
         mock_connect.assert_called_once_with(
-            username='user', password="pw", api_endpoint='api_endpoint', database='firebolt', engine_name=''
+            username='user',
+            password="pw",
+            api_endpoint='api_endpoint',
+            database='firebolt',
+            engine_name='test',
         )
 
 
@@ -75,9 +79,9 @@ class TestFireboltHook(unittest.TestCase):
     def test_run_multi_queries(self):
         sql = ['SQL1', 'SQL2']
         self.db_hook.run(sql, autocommit=True)
-        for i, item in enumerate(self.conn.execute.call_args_list):
+        for i, item in enumerate(self.cur.execute.call_args_list):
             args, kwargs = item
-            assert len(args) == 2
+            assert len(args) == 1
             assert args[0] == sql[i]
             assert kwargs == {}
         self.cur.execute.assert_called_with(sql[1])

@@ -17,7 +17,7 @@
 # under the License.
 from typing import Any, Dict, List, Optional, Union
 
-from airflow.models import BaseOperator
+from airflow.models import BaseOperator, BaseOperatorLink
 from airflow.providers.firebolt.hooks.firebolt import FireboltHook
 
 
@@ -33,6 +33,20 @@ def get_db_hook(self) -> FireboltHook:
         database=self.database,
         engine_name=self.engine_name,
     )
+
+
+class RegistryLink(BaseOperatorLink):
+    """Link to Registry"""
+
+    name = "Astronomer Registry"
+
+    def get_link(self, operator, dttm):
+        """Get link to registry page."""
+
+        registry_link = (
+            "https://registry.astronomer.io/providers/{provider}/modules/{operator}"
+        )
+        return registry_link.format(provider="firebolt", operator="fireboltoperator")
 
 
 class FireboltOperator(BaseOperator):
