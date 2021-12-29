@@ -21,7 +21,7 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
-from airflow.providers.firebolt.hooks.firebolt import FireboltHook
+from firebolt.hooks.firebolt import FireboltHook
 
 
 class TestFireboltHookConn(unittest.TestCase):

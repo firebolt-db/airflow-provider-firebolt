@@ -20,7 +20,7 @@ import pytest
 import unittest
 from unittest import mock
 
-from airflow.providers.firebolt.operators.firebolt import FireboltOperator
+from firebolt.operators.firebolt import FireboltOperator
 
 
 class TestFireboltOperator(unittest.TestCase):
