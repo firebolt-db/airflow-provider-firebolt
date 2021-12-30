@@ -69,12 +69,16 @@ class TestFireboltHook(unittest.TestCase):
 
         self.db_hook = UnitTestFireboltHook()
 
-    @mock.patch('firebolt_provider.hooks.firebolt.FireboltHook')
-    def test_run_with_parameters(self, mock_hook):
+    def test_run_with_parameters(self):
         sql = "SQL"
         parameters = ('param1', 'param2')
         self.db_hook.run(sql=sql, parameters=parameters)
         self.cur.execute.assert_called_once_with(sql, parameters)
+
+    def test_run_with_single_query(self):
+        sql = "SQL"
+        self.db_hook.run(sql=sql)
+        self.cur.execute.assert_called_once_with(sql)
 
     def test_run_multi_queries(self):
         sql = ['SQL1', 'SQL2']
