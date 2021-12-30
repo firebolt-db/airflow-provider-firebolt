@@ -21,7 +21,7 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
-from firebolt.hooks.firebolt import FireboltHook
+from firebolt_provider.hooks.firebolt import FireboltHook
 
 
 class TestFireboltHookConn(unittest.TestCase):
@@ -41,7 +41,7 @@ class TestFireboltHookConn(unittest.TestCase):
         self.db_hook.get_connection = mock.Mock()
         self.db_hook.get_connection.return_value = self.connection
 
-    @patch('airflow.providers.firebolt.hooks.firebolt.connect')
+    @patch('firebolt_provider.hooks.firebolt.connect')
     def test_get_conn(self, mock_connect):
         self.db_hook.get_conn()
         mock_connect.assert_called_once_with(
@@ -69,7 +69,7 @@ class TestFireboltHook(unittest.TestCase):
 
         self.db_hook = UnitTestFireboltHook()
 
-    @mock.patch('airflow.providers.firebolt.hooks.firebolt.FireboltHook')
+    @mock.patch('firebolt_provider.hooks.firebolt.FireboltHook')
     def test_run_with_parameters(self, mock_hook):
         sql = "SQL"
         parameters = ('param1', 'param2')
@@ -100,7 +100,7 @@ class TestFireboltHook(unittest.TestCase):
         }
         self.db_hook.get_ui_field_behaviour() == widget
 
-    @mock.patch('airflow.providers.firebolt.hooks.firebolt.FireboltHook.run')
+    @mock.patch('firebolt_provider.hooks.firebolt.FireboltHook.run')
     def test_connection_success(self, mock_run):
         mock_run.return_value = [{'1': 1}]
         status, msg = self.db_hook.test_connection()
@@ -108,7 +108,7 @@ class TestFireboltHook(unittest.TestCase):
         assert msg == 'Connection successfully tested'
 
     @mock.patch(
-        'airflow.providers.firebolt.hooks.firebolt.FireboltHook.run',
+        'firebolt_provider.hooks.firebolt.FireboltHook.run',
         side_effect=Exception('Connection Errors'),
     )
     def test_connection_failure(self, mock_run):

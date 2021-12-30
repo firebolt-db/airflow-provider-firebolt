@@ -20,11 +20,11 @@ import pytest
 import unittest
 from unittest import mock
 
-from firebolt.operators.firebolt import FireboltOperator
+from firebolt_provider.operators.firebolt import FireboltOperator
 
 
 class TestFireboltOperator(unittest.TestCase):
-    @mock.patch('airflow.providers.firebolt.operators.firebolt.FireboltHook')
+    @mock.patch('firebolt_provider.operators.firebolt.FireboltHook')
     def test_execute(self, mock_hook):
         sql = "SELECT 1"
         autocommit = True
@@ -50,7 +50,7 @@ class TestFireboltOperator(unittest.TestCase):
     ],
 )
 class TestGetDBHook:
-    @mock.patch("airflow.providers.firebolt.operators.firebolt.get_db_hook")
+    @mock.patch("firebolt_provider.operators.firebolt.get_db_hook")
     def test_get_db_hook(
         self,
         mock_get_db_hook,
