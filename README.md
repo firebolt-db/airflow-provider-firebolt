@@ -79,7 +79,7 @@ in [Naming conventions for provider packages](https://github.com/apache/airflow/
 
 | New Airflow 2.0 operators: `airflow.providers.firebolt` package                                                                 |
 |:------------------------------------------------------------------------------------------------------------------------------|
-| [operators.firebolt.FireboltOperator](https://github.com/apache/airflow/blob/master/airflow/providers/firebolt_provider/operators/firebolt.py) |
+| [operators.firebolt.FireboltOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) |
 
 
 
@@ -91,7 +91,7 @@ in [Naming conventions for provider packages](https://github.com/apache/airflow/
 
 | New Airflow 2.0 hooks: `airflow.providers.firebolt` package                                                         |
 |:------------------------------------------------------------------------------------------------------------------|
-| [hooks.firebolt.FireboltHook](https://github.com/apache/airflow/blob/master/airflow/providers/firebolt_provider/hooks/firebolt.py) |
+| [hooks.firebolt.FireboltHook](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/hooks/firebolt.py) |
 
 
 ## Releases
