@@ -17,6 +17,7 @@
 # under the License.
 
 
+import json
 import unittest
 from unittest import mock
 from unittest.mock import patch
@@ -56,9 +57,9 @@ class TestFireboltHookConn(unittest.TestCase):
 class TestFireboltHook(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        self.cur = mock.MagicMock(rowcount=0)
         self.conn = mock.MagicMock()
-        self.conn.cursor.return_value = self.cur
+        self.cursor = mock.MagicMock(rowcount=0)
+        self.conn.cursor.return_value = self.cursor
         conn = self.conn
 
         class UnitTestFireboltHook(FireboltHook):
@@ -73,33 +74,40 @@ class TestFireboltHook(unittest.TestCase):
         sql = "SQL"
         parameters = ('param1', 'param2')
         self.db_hook.run(sql=sql, parameters=parameters)
-        self.cur.execute.assert_called_once_with(sql, parameters)
+        self.conn.__enter__().cursor().__enter__().\
+            execute.assert_called_once_with(sql, parameters)
 
     def test_run_with_single_query(self):
         sql = "SQL"
-        self.db_hook.run(sql=sql)
-        self.cur.execute.assert_called_once_with(sql)
+        self.db_hook.run(sql)
+        self.conn.__enter__().cursor().__enter__().\
+            execute.assert_called_once_with(sql)
 
     def test_run_multi_queries(self):
         sql = ['SQL1', 'SQL2']
         self.db_hook.run(sql, autocommit=True)
-        for i, item in enumerate(self.cur.execute.call_args_list):
+        for i, item in enumerate(self.conn.__enter__().cursor().__enter__().
+                execute.call_args_list):
             args, kwargs = item
             assert len(args) == 1
             assert args[0] == sql[i]
             assert kwargs == {}
-        self.cur.execute.assert_called_with(sql[1])
+        self.conn.__enter__().cursor().__enter__().execute.assert_called_with(sql[1])
 
     def test_get_ui_field_behaviour(self):
         widget = {
-            "hidden_fields": ['port', 'extra'],
+            "hidden_fields": ['port'],
             "relabeling": {'schema': 'Database', 'host': 'API End Point'},
             "placeholders": {
                 'host': 'firebolt api end point',
                 'schema': 'firebolt database',
                 'login': 'firebolt userid',
                 'password': 'password',
-                'extra__firebolt__engine__name': 'firebolt engine name',
+                'extra': json.dumps(
+                    {
+                        "engine_name": "firebolt engine name",
+                    },
+                ),
             },
         }
         self.db_hook.get_ui_field_behaviour() == widget
