@@ -18,7 +18,6 @@
 #
 
 import json
-from contextlib import closing
 from typing import Dict, List, Optional, Union
 
 from firebolt.client import DEFAULT_API_URL
