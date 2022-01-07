@@ -118,8 +118,8 @@ class FireboltHook(DbApiHook):
         scalar = isinstance(sql, str)
         if scalar:
             sql = [sql]
-        with closing(self.get_conn()) as conn:
-            with closing(conn.cursor()) as cursor:
+        with self.get_conn() as conn:
+            with conn.cursor() as cursor:
                 for sql_statement in sql:
                     if parameters:
                         cursor.execute(sql_statement, parameters)
