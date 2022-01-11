@@ -86,13 +86,9 @@ class TestFireboltHook(unittest.TestCase):
     def test_run_multi_queries(self):
         sql = ['SQL1', 'SQL2']
         self.db_hook.run(sql, autocommit=True)
-        for i, item in enumerate(self.conn.__enter__().cursor().__enter__().
-                execute.call_args_list):
-            args, kwargs = item
-            assert len(args) == 1
-            assert args[0] == sql[i]
-            assert kwargs == {}
-        self.conn.__enter__().cursor().__enter__().execute.assert_called_with(sql[1])
+        for query in sql:
+            self.conn.__enter__().cursor().__enter__().execute.assert_any_call(query)
+
 
     def test_get_ui_field_behaviour(self):
         widget = {
