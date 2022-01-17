@@ -39,7 +39,7 @@ Release: 0.0.1
 ## Provider package
 
 This is a provider package for `firebolt` provider. All classes for this provider package
-are in `airflow.providers.firebolt` python package.
+are in `firebolt_provider` python package.
 
 
 
@@ -68,7 +68,7 @@ In the Airflow user interface, configure a Connection for Firebolt. Most of the 
 # Provider classes summary
 
 In Airflow 2.0, all operators, hooks for the `firebolt` provider
-are in the `airflow.providers.firebolt` package. You can read more about the naming conventions used
+are in the `firebolt_provider` package. You can read more about the naming conventions used
 in [Naming conventions for provider packages](https://github.com/apache/airflow/blob/master/CONTRIBUTING.rst#naming-conventions-for-provider-packages)
 
 
@@ -77,7 +77,7 @@ in [Naming conventions for provider packages](https://github.com/apache/airflow/
 
 ### New operators
 
-| New Airflow 2.0 operators: `airflow.providers.firebolt` package                                                                 |
+| New Airflow 2.0 operators: `firebolt_provider` package                                                                 |
 |:------------------------------------------------------------------------------------------------------------------------------|
 | [operators.firebolt.FireboltOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) |
 
@@ -89,7 +89,7 @@ in [Naming conventions for provider packages](https://github.com/apache/airflow/
 
 ### New hooks
 
-| New Airflow 2.0 hooks: `airflow.providers.firebolt` package                                                         |
+| New Airflow 2.0 hooks: `firebolt_provider` package                                                         |
 |:------------------------------------------------------------------------------------------------------------------|
 | [hooks.firebolt.FireboltHook](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/hooks/firebolt.py) |
 
