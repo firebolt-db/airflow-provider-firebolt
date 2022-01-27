@@ -16,37 +16,36 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pytest
 import unittest
 from unittest import mock
+
+import pytest
 
 from firebolt_provider.operators.firebolt import FireboltOperator
 
 
 class TestFireboltOperator(unittest.TestCase):
-    @mock.patch('firebolt_provider.operators.firebolt.FireboltHook')
+    @mock.patch("firebolt_provider.operators.firebolt.FireboltHook")
     def test_execute(self, mock_hook):
         sql = "SELECT 1"
         autocommit = True
-        parameters = {'value': 1}
+        parameters = {"value": 1}
         operator = FireboltOperator(
-            task_id='test_task_id',
+            task_id="test_task_id",
             sql=sql,
             autocommit=autocommit,
-            parameters=parameters
+            parameters=parameters,
         )
         operator.execute({})
         mock_hook.return_value.run.assert_called_once_with(
-            sql=sql,
-            autocommit=autocommit,
-            parameters=parameters
+            sql=sql, autocommit=autocommit, parameters=parameters
         )
 
 
 @pytest.mark.parametrize(
     "operator_class, kwargs",
     [
-        (FireboltOperator, dict(sql='Select * from test_table')),
+        (FireboltOperator, dict(sql="Select * from test_table")),
     ],
 )
 class TestGetDBHook:
@@ -58,9 +57,7 @@ class TestGetDBHook:
         kwargs,
     ):
         operator = operator_class(
-            task_id='test_task_id',
-            firebolt_conn_id='firebolt_default',
-            **kwargs
+            task_id="test_task_id", firebolt_conn_id="firebolt_default", **kwargs
         )
         operator.get_db_hook()
         mock_get_db_hook.assert_called_once()

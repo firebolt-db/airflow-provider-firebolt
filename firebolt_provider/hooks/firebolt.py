@@ -18,12 +18,11 @@
 #
 
 import json
-from typing import Dict, List, Optional, Union
-
-from firebolt.client import DEFAULT_API_URL
-from firebolt.db import Connection, connect
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from airflow.hooks.dbapi import DbApiHook
+from firebolt.client import DEFAULT_API_URL
+from firebolt.db import Connection, connect
 
 
 class FireboltHook(DbApiHook):
@@ -41,23 +40,23 @@ class FireboltHook(DbApiHook):
     :type engine_name: Optional[str]
     """
 
-    conn_name_attr = 'firebolt_conn_id'
-    default_conn_name = 'firebolt_default'
-    conn_type = 'firebolt'
-    hook_name = 'Firebolt'
+    conn_name_attr = "firebolt_conn_id"
+    default_conn_name = "firebolt_default"
+    conn_type = "firebolt"
+    hook_name = "Firebolt"
 
     @staticmethod
     def get_ui_field_behaviour() -> Dict:
         """Returns custom field behaviour"""
         return {
-            "hidden_fields": ['port'],
-            "relabeling": {'schema': 'Database', 'host': 'API End Point'},
+            "hidden_fields": ["port"],
+            "relabeling": {"schema": "Database", "host": "API End Point"},
             "placeholders": {
-                'host': 'firebolt api end point',
-                'schema': 'firebolt database',
-                'login': 'firebolt userid',
-                'password': 'password',
-                'extra': json.dumps(
+                "host": "firebolt api end point",
+                "schema": "firebolt database",
+                "login": "firebolt userid",
+                "password": "password",
+                "extra": json.dumps(
                     {
                         "engine_name": "firebolt engine name",
                     },
@@ -65,7 +64,7 @@ class FireboltHook(DbApiHook):
             },
         }
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Optional[str], **kwargs: Optional[str]) -> None:
         """Firebolthook Constructor"""
         super().__init__(*args, **kwargs)
         self.database = kwargs.pop("database", None)
@@ -79,10 +78,10 @@ class FireboltHook(DbApiHook):
         conn_id = getattr(self, self.conn_name_attr)
         conn = self.get_connection(conn_id)
         database = conn.schema
-        engine_name = conn.extra_dejson.get('engine_name', '')
+        engine_name = conn.extra_dejson.get("engine_name", "")
         conn_config = {
             "username": conn.login,
-            "password": conn.password or '',
+            "password": conn.password or "",
             "api_endpoint": conn.host or DEFAULT_API_URL,
             "database": self.database or database,
             "engine_name": self.engine_name or engine_name,
@@ -99,7 +98,8 @@ class FireboltHook(DbApiHook):
         self,
         sql: Union[str, List],
         autocommit: bool = False,
-        parameters: Optional[Dict] = None
+        parameters: Optional[Dict] = None,
+        handler: Optional[Callable] = None,
     ) -> None:
         """
         Runs a command or a list of commands. Pass a list of sql
@@ -126,7 +126,7 @@ class FireboltHook(DbApiHook):
                         cursor.execute(sql_statement)
                     self.log.info(f"Rows affected: {cursor.rowcount}")
 
-    def test_connection(self):
+    def test_connection(self) -> Tuple[bool, str]:
         """Test the Firebolt connection by running a simple query."""
         try:
             self.run(sql="select 1")
