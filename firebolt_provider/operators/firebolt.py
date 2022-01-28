@@ -15,13 +15,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from airflow.models import BaseOperator, BaseOperatorLink
+
 from firebolt_provider.hooks.firebolt import FireboltHook
 
 
-def get_db_hook(self) -> FireboltHook:
+def get_db_hook(self: "FireboltOperator") -> FireboltHook:
     """
     Create and return FireboltHook.
 
@@ -40,7 +42,7 @@ class RegistryLink(BaseOperatorLink):
 
     name = "Astronomer Registry"
 
-    def get_link(self, operator, dttm):
+    def get_link(self, operator: BaseOperator, dttm: datetime) -> str:
         """Get link to registry page."""
 
         registry_link = (
@@ -73,15 +75,15 @@ class FireboltOperator(BaseOperator):
     :type engine_name: str
     """
 
-    template_fields = ('sql',)
-    template_ext = ('.sql',)
-    ui_color = '#b4e0ff'
+    template_fields = ("sql",)
+    template_ext = (".sql",)
+    ui_color = "#b4e0ff"
 
     def __init__(
         self,
         *,
         sql: Union[str, List[str]],
-        firebolt_conn_id: str = 'firebolt_default',
+        firebolt_conn_id: str = "firebolt_default",
         parameters: Optional[dict] = None,
         database: Optional[str] = None,
         engine_name: Optional[str] = None,
@@ -101,6 +103,6 @@ class FireboltOperator(BaseOperator):
 
     def execute(self, context: Dict[Any, Any]) -> None:
         """Run query on firebolt"""
-        self.log.info('Executing: %s', self.sql)
+        self.log.info("Executing: %s", self.sql)
         hook = self.get_db_hook()
         hook.run(sql=self.sql, autocommit=self.autocommit, parameters=self.parameters)
