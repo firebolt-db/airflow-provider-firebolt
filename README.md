@@ -41,7 +41,7 @@ You can install this package via
 pip install airflow-provider-firebolt
 ```
 
-`airflow-provider-firebolt` requires `apache-airflow` 2.3.0+ and `firebolt-sdk` 0.2.0+.
+`airflow-provider-firebolt` requires `apache-airflow` 2.2.0+ and `firebolt-sdk` 0.2.0+.
 
 
 <a id="configuration"></a>
