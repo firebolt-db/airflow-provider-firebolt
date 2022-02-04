@@ -17,44 +17,34 @@
  under the License.
  -->
 
+# Firebolt Provider for Apache Airflow
 
-# Package airflow-providers-firebolt
+<img width="1114" alt="Screen Shot 2022-02-02 at 2 57 37 PM" src="https://user-images.githubusercontent.com/7674553/152251803-427f45b5-2160-4434-9f3e-431db4d3e79e.png">
 
-Release: 0.0.1
+This is the provider package for the `firebolt` provider. All classes for this provider package are in the `firebolt_provider` Python package.
 
-**Table of contents**
+## Contents
 
-- [Provider package](#provider-package)
-- [Installation](#installation)
-- [PIP requirements](#pip-requirements)
-- [Configuration](#configuration)
-- [Provider class summary](#provider-classes-summary)
-    - [Operators](#operators)
-        - [New operators](#new-operators)
-    - [Hooks](#hooks)
-        - [New hooks](#new-hooks)
-- [Releases](#releases)
-    - [Release 0.0.1](#release-001)
-
-## Provider package
-
-This is a provider package for `firebolt` provider. All classes for this provider package
-are in `firebolt_provider` python package.
+- <a href="#installation">Installation</a>[]()
+- <a href="#configuration">Configuration</a>[]()
+- <a href="#modules">Modules</a>[]()
+    - <a href="#operators">Operators</a>[]()
+    - <a href="#hooks">Hooks</a>[]()
 
 
-
+<a id="installation"></a>
 ## Installation
 
-You can install this package on top of an existing airflow 2.* installation via
+You can install this package via
 
-`pip install airflow-providers-firebolt`
+```shell
+pip install airflow-provider-firebolt
+```
 
-## PIP requirements
+`airflow-provider-firebolt` requires `apache-airflow` 2.2.0+ and `firebolt-sdk` 0.2.0+.
 
-| PIP package   | Version required   |
-|:--------------|:-------------------|
-| firebolt-sdk  | &gt;=0.2.0         |
 
+<a id="configuration"></a>
 ## Configuration
 
 In the Airflow user interface, configure a Connection for Firebolt. Most of the Connection config fields will be left blank. Configure the following fields:
@@ -65,39 +55,18 @@ In the Airflow user interface, configure a Connection for Firebolt. Most of the 
 * `Password`: Firebolt Password
 * `Engine_Name`: Firebolt Engine Name
 
-# Provider classes summary
 
-In Airflow 2.0, all operators, hooks for the `firebolt` provider
-are in the `firebolt_provider` package. You can read more about the naming conventions used
-in [Naming conventions for provider packages](https://github.com/apache/airflow/blob/master/CONTRIBUTING.rst#naming-conventions-for-provider-packages)
+<a id="modules"></a>
+## Modules
 
 
-## Operators
+<a id="operators"></a>
+### Operators
+
+[operators.firebolt.FireboltOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) runs a provided SQL script against Firebolt and returns results.
 
 
-### New operators
+<a id="hooks"></a>
+### Hooks
 
-| New Airflow 2.0 operators: `firebolt_provider` package                                                                 |
-|:------------------------------------------------------------------------------------------------------------------------------|
-| [operators.firebolt.FireboltOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) |
-
-
-
-
-## Hooks
-
-
-### New hooks
-
-| New Airflow 2.0 hooks: `firebolt_provider` package                                                         |
-|:------------------------------------------------------------------------------------------------------------------|
-| [hooks.firebolt.FireboltHook](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/hooks/firebolt.py) |
-
-
-## Releases
-
-### Release 0.0.1
-
-| Commit                                                                                         | Committed   | Subject                                                                 |
-|:-----------------------------------------------------------------------------------------------|:------------|:------------------------------------------------------------------------|
-| |
+[hooks.firebolt.FireboltHook](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/hooks/firebolt.py) establishes a connection to Firebolt.
