@@ -35,9 +35,7 @@ SQL_CREATE_TABLE_STATEMENT = (
     f"(id INT, name String)"
     f" PRIMARY INDEX id;"
 )
-SQL_INSERT_STATEMENT = (
-    f"INSERT INTO {FIREBOLT_SAMPLE_TABLE} values (%(id)s, 'name');"
-)
+SQL_INSERT_STATEMENT = f"INSERT INTO {FIREBOLT_SAMPLE_TABLE} values (%(id)s, 'name');"
 SQL_LIST = [SQL_INSERT_STATEMENT % {"id": n} for n in range(0, 10)]
 SELECT_STATEMENT_SQL_STRING = f"SELECT * FROM {FIREBOLT_SAMPLE_TABLE} LIMIT 10;"
 SQL_DROP_TABLE_STATEMENT = f"DROP TABLE IF EXISTS {FIREBOLT_SAMPLE_TABLE};"
@@ -68,7 +66,7 @@ with DAG(
         sql=SQL_INSERT_STATEMENT,
         parameters=[56],
     )
-    
+
     firebolt_op_sql_str = FireboltOperator(
         task_id="firebolt_op_sql_str",
         sql=SELECT_STATEMENT_SQL_STRING,
