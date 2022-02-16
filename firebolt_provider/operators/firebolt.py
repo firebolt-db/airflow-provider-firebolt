@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from airflow.models import BaseOperator, BaseOperatorLink
 
@@ -84,7 +84,7 @@ class FireboltOperator(BaseOperator):
         *,
         sql: Union[str, List[str]],
         firebolt_conn_id: str = "firebolt_default",
-        parameters: Optional[dict] = None,
+        parameters: Optional[Sequence] = None,
         database: Optional[str] = None,
         engine_name: Optional[str] = None,
         autocommit: bool = False,
@@ -101,7 +101,7 @@ class FireboltOperator(BaseOperator):
     def get_db_hook(self) -> FireboltHook:
         return get_db_hook(self)
 
-    def execute(self, context: Dict[Any, Any]) -> None:
+    def execute(self, context: Any) -> None:
         """Run query on firebolt"""
         self.log.info("Executing: %s", self.sql)
         hook = self.get_db_hook()

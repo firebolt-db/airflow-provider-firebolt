@@ -18,7 +18,7 @@
 #
 
 import json
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from airflow.hooks.dbapi import DbApiHook
 from firebolt.client import DEFAULT_API_URL
@@ -98,7 +98,7 @@ class FireboltHook(DbApiHook):
         self,
         sql: Union[str, List],
         autocommit: bool = False,
-        parameters: Optional[Dict] = None,
+        parameters: Optional[Sequence] = None,
         handler: Optional[Callable] = None,
     ) -> None:
         """
