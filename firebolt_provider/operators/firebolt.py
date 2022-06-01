@@ -15,10 +15,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from airflow.models import BaseOperator, BaseOperatorLink
+from airflow.models.abstractoperator import AbstractOperator
+from airflow.models.taskinstance import TaskInstanceKey
+from airflow.utils.context import Context
 
 from firebolt_provider.hooks.firebolt import FireboltHook
 
@@ -42,7 +44,7 @@ class RegistryLink(BaseOperatorLink):
 
     name = "Astronomer Registry"
 
-    def get_link(self, operator: BaseOperator, dttm: datetime) -> str:
+    def get_link(self, operator: AbstractOperator, *, ti_key: TaskInstanceKey) -> str:
         """Get link to registry page."""
 
         registry_link = (
@@ -101,7 +103,7 @@ class FireboltOperator(BaseOperator):
     def get_db_hook(self) -> FireboltHook:
         return get_db_hook(self)
 
-    def execute(self, context: Dict[Any, Any]) -> None:
+    def execute(self, context: Context) -> Any:
         """Run query on firebolt"""
         self.log.info("Executing: %s", self.sql)
         hook = self.get_db_hook()

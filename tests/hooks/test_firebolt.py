@@ -33,7 +33,7 @@ class TestFireboltHookConn(unittest.TestCase):
         self.connection.password = "pw"
         self.connection.schema = "firebolt"
         self.connection.host = "api_endpoint"
-        self.connection.extra_dejson = {"engine_name": "test"}
+        self.connection.extra_dejson = {"engine_name": "test", "account_name": "firebolt"}
 
         class UnitTestFireboltHook(FireboltHook):
             conn_name_attr = "firebolt_conn_id"
@@ -51,6 +51,7 @@ class TestFireboltHookConn(unittest.TestCase):
             api_endpoint="api_endpoint",
             database="firebolt",
             engine_name="test",
+            account_name="firebolt"
         )
 
 
