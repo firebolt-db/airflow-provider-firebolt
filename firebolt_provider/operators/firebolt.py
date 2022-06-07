@@ -85,7 +85,6 @@ class FireboltOperator(BaseOperator):
 
     def __init__(
         self,
-        *,
         sql: Union[str, List[str]],
         firebolt_conn_id: str = "firebolt_default",
         parameters: Optional[Sequence] = None,
@@ -107,7 +106,8 @@ class FireboltOperator(BaseOperator):
 
     def execute(self, context: Context) -> Any:
         """Run query on firebolt"""
-        self.log.info(f"Executing: {self.sql}")
+        self.log.info("Executing: %s", self.sql)
+
         hook = self.get_db_hook()
         hook.run(sql=self.sql, autocommit=self.autocommit, parameters=self.parameters)
 
@@ -126,9 +126,8 @@ class FireboltStartEngineOperator(BaseOperator):
 
     def __init__(
         self,
-        *,
-        firebolt_conn_id: str = "firebolt_default",
         engine_name: str,
+        firebolt_conn_id: str = "firebolt_default",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -143,7 +142,9 @@ class FireboltStartEngineOperator(BaseOperator):
         rm = get_db_hook(self).get_resource_manager()
         engine = rm.engines.get_by_name(self.engine_name)
 
-        self.log.info(f"Found engine: {engine.name}, status: {engine.current_status}")
+        self.log.info(
+            "Found engine: %s, status: %s", engine.name, engine.current_status
+        )
         engine.start(wait_for_startup=True)
 
 
@@ -161,9 +162,8 @@ class FireboltStopEngineOperator(BaseOperator):
 
     def __init__(
         self,
-        *,
-        firebolt_conn_id: str = "firebolt_default",
         engine_name: str,
+        firebolt_conn_id: str = "firebolt_default",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -178,5 +178,7 @@ class FireboltStopEngineOperator(BaseOperator):
         rm = get_db_hook(self).get_resource_manager()
         engine = rm.engines.get_by_name(self.engine_name)
 
-        self.log.info(f"Found engine: {engine.name}, status: {engine.current_status}")
+        self.log.info(
+            "Found engine: %s, status: %s", engine.name, engine.current_status
+        )
         engine.stop(wait_for_stop=True)
