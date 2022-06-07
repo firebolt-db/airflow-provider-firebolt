@@ -48,7 +48,7 @@ class RegistryLink(BaseOperatorLink):
 
     name = "Astronomer Registry"
 
-    def get_link(self, operator: AbstractOperator, *, ti_key: TaskInstanceKey) -> str:
+    def get_link(self, operator: AbstractOperator, ti_key: TaskInstanceKey) -> str:
         """Get link to registry page."""
 
         registry_link = (
