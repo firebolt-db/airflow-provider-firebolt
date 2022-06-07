@@ -62,7 +62,7 @@ class FireboltHook(DbApiHook):
                 "password": "Your password to log in to Firebolt",
                 "extra": json.dumps(
                     {
-                        "account_name": "firebolt",
+                        "account_name": "The Firebolt account to log in to",
                         "engine_name": "The engine name to run SQL on",
                     },
                 ),

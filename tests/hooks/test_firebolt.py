@@ -33,7 +33,6 @@ class TestFireboltHookConn(unittest.TestCase):
         self.connection.password = "pw"
         self.connection.schema = "firebolt"
         self.connection.host = "api_endpoint"
-        self.connection.extra_dejson = {"engine_name": "test", "account_name": "firebolt"}
 
         class UnitTestFireboltHook(FireboltHook):
             conn_name_attr = "firebolt_conn_id"
@@ -44,6 +43,11 @@ class TestFireboltHookConn(unittest.TestCase):
 
     @patch("firebolt_provider.hooks.firebolt.connect")
     def test_get_conn(self, mock_connect):
+        self.connection.extra_dejson = {
+            "engine_name": "test",
+            "account_name": "firebolt",
+        }
+
         self.db_hook.get_conn()
         mock_connect.assert_called_once_with(
             username="user",
@@ -51,7 +55,21 @@ class TestFireboltHookConn(unittest.TestCase):
             api_endpoint="api_endpoint",
             database="firebolt",
             engine_name="test",
-            account_name="firebolt"
+            account_name="firebolt",
+        )
+
+    @patch("firebolt_provider.hooks.firebolt.connect")
+    def test_get_conn_no_extra(self, mock_connect):
+        self.connection.extra_dejson = {}
+
+        self.db_hook.get_conn()
+        mock_connect.assert_called_once_with(
+            username="user",
+            password="pw",
+            api_endpoint="api_endpoint",
+            database="firebolt",
+            engine_name=None,
+            account_name=None,
         )
 
 
