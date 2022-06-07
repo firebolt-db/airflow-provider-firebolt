@@ -30,8 +30,8 @@ from firebolt_provider.operators.firebolt import (
 
 FIREBOLT_CONN_ID = "firebolt_conn_id"
 FIREBOLT_SAMPLE_TABLE = "sample_table"
-FIREBOLT_DATABASE = "yury_integration_tests_ingest"
-FIREBOLT_ENGINE = "yury_integration_tests_ingest_Ingest2"
+FIREBOLT_DATABASE = "sample_database"
+FIREBOLT_ENGINE = "sample_engine"
 
 # SQL commands
 SQL_CREATE_TABLE_STATEMENT = (
