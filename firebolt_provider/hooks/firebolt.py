@@ -18,11 +18,13 @@
 #
 
 import json
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from airflow.hooks.dbapi import DbApiHook
 from firebolt.client import DEFAULT_API_URL
+from firebolt.common import Settings
 from firebolt.db import Connection, connect
+from firebolt.service.manager import ResourceManager
 
 
 class FireboltHook(DbApiHook):
@@ -94,11 +96,23 @@ class FireboltHook(DbApiHook):
         conn = connect(**conn_config)
         return conn
 
+    def get_resource_manager(self) -> ResourceManager:
+        """Return Resource Manager"""
+        conn_config = self._get_conn_params()
+        return ResourceManager(
+            Settings(
+                user=conn_config["username"],
+                password=conn_config["password"],
+                server=conn_config["api_endpoint"],
+                default_region="us-east-1",
+            )
+        )
+
     def run(
         self,
         sql: Union[str, List],
         autocommit: bool = False,
-        parameters: Optional[Dict] = None,
+        parameters: Optional[Sequence] = None,
         handler: Optional[Callable] = None,
     ) -> None:
         """

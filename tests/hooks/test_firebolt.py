@@ -22,6 +22,8 @@ import unittest
 from unittest import mock
 from unittest.mock import patch
 
+from firebolt.common import Settings
+
 from firebolt_provider.hooks.firebolt import FireboltHook
 
 
@@ -51,6 +53,19 @@ class TestFireboltHookConn(unittest.TestCase):
             api_endpoint="api_endpoint",
             database="firebolt",
             engine_name="test",
+        )
+
+    @patch("firebolt_provider.hooks.firebolt.ResourceManager")
+    def test_get_resource_manager(self, mock_rm):
+        self.db_hook.get_resource_manager()
+
+        mock_rm.assert_called_once_with(
+            Settings(
+                user="user",
+                password="pw",
+                server="api_endpoint",
+                default_region="us-east-1",
+            )
         )
 
 

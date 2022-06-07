@@ -22,18 +22,22 @@ from datetime import datetime
 
 from airflow import DAG
 
-from firebolt_provider.operators.firebolt import FireboltOperator
+from firebolt_provider.operators.firebolt import (
+    FireboltOperator,
+    FireboltStartEngineOperator,
+    FireboltStopEngineOperator,
+)
 
 FIREBOLT_CONN_ID = "firebolt_conn_id"
 FIREBOLT_SAMPLE_TABLE = "order_details"
-FIREBOLT_DATABASE = "Sigmoid_Alchemy"
-FIREBOLT_ENGINE = "Sigmoid_Alchemy_Ingest"
+FIREBOLT_DATABASE = "yury_integration_tests_ingest"
+FIREBOLT_ENGINE = "yury_integration_tests_ingest_Ingest2"
 
 # SQL commands
 SELECT_STATEMENT_SQL_STRING = f"SELECT * FROM {FIREBOLT_SAMPLE_TABLE} LIMIT 1;"
 SQL_INSERT_STATEMENT = (
     f"INSERT INTO {FIREBOLT_SAMPLE_TABLE} values "
-    f"(92,'Oil - Shortening - All - Purpose',"
+    f"(?,'Oil - Shortening - All - Purpose',"
     f"6928105225,5,4784.12,'2019-06-05','2019-06-05 04:02:08',1); "
 )
 SQL_LIST = [
@@ -56,6 +60,10 @@ with DAG(
     tags=["example"],
     catchup=False,
 ) as dag:
+    firebolt_start_engine = FireboltStartEngineOperator(
+        task_id="firebolt_start_engine",
+        engine_name=FIREBOLT_ENGINE,
+    )
 
     firebolt_op_sql_str = FireboltOperator(
         task_id="firebolt_op_sql_str",
@@ -65,7 +73,7 @@ with DAG(
     firebolt_op_with_params = FireboltOperator(
         task_id="firebolt_op_with_params",
         sql=SQL_INSERT_STATEMENT,
-        parameters={"id": 56},
+        parameters=[56],
     )
 
     firebolt_op_sql_list = FireboltOperator(
@@ -93,12 +101,19 @@ with DAG(
         sql=SQL_DROP_TABLE_STATEMENT,
     )
 
+    firebolt_stop_engine = FireboltStopEngineOperator(
+        task_id="firebolt_stop_engine",
+        engine_name=FIREBOLT_ENGINE,
+    )
+
     (
-        firebolt_op_sql_str
+        firebolt_start_engine
+        >> firebolt_op_sql_str
         >> firebolt_op_with_params
         >> firebolt_op_sql_list
         >> firebolt_op_sql_create_db
         >> firebolt_op_sql_drop_db
         >> firebolt_op_sql_create_table
         >> firebolt_op_sql_drop_table
+        >> firebolt_stop_engine
     )
