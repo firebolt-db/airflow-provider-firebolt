@@ -22,12 +22,16 @@ from datetime import datetime
 
 from airflow import DAG
 
-from firebolt_provider.operators.firebolt import FireboltOperator
+from firebolt_provider.operators.firebolt import (
+    FireboltOperator,
+    FireboltStartEngineOperator,
+    FireboltStopEngineOperator,
+)
 
 FIREBOLT_CONN_ID = "firebolt_conn_id"
 FIREBOLT_SAMPLE_TABLE = "sample_table"
-FIREBOLT_DATABASE = "sample_database"
-FIREBOLT_ENGINE = "sample_engine"
+FIREBOLT_DATABASE = "yury_integration_tests_ingest"
+FIREBOLT_ENGINE = "yury_integration_tests_ingest_Ingest2"
 
 # SQL commands
 SQL_CREATE_TABLE_STATEMENT = (
@@ -50,6 +54,8 @@ with DAG(
     tags=["example"],
     catchup=False,
 ) as dag:
+    firebolt_start_engine = FireboltStartEngineOperator(engine_name=FIREBOLT_ENGINE)
+    firebolt_stop_engine = FireboltStopEngineOperator(engine_name=FIREBOLT_ENGINE)
 
     firebolt_op_sql_create_table = FireboltOperator(
         task_id="firebolt_op_sql_create_table",
@@ -88,11 +94,13 @@ with DAG(
     )
 
     (
-        firebolt_op_sql_create_table
+        firebolt_start_engine
+        >> firebolt_op_sql_create_table
         >> firebolt_op_sql_list
         >> firebolt_op_with_params
         >> firebolt_op_sql_str
         >> firebolt_op_sql_drop_table
         >> firebolt_op_sql_create_db
         >> firebolt_op_sql_drop_db
+        >> firebolt_stop_engine
     )

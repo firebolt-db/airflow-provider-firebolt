@@ -70,3 +70,7 @@ In the Airflow user interface, configure a Connection for Firebolt. Most of the 
 ### Hooks
 
 [hooks.firebolt.FireboltHook](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/hooks/firebolt.py) establishes a connection to Firebolt.
+
+## Contributing
+
+See: [CONTRIBUTING.MD](https://github.com/firebolt-db/airflow-provider-firebolt/tree/main/CONTRIBUTING.MD)
