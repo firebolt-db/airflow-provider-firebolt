@@ -54,8 +54,12 @@ with DAG(
     tags=["example"],
     catchup=False,
 ) as dag:
-    firebolt_start_engine = FireboltStartEngineOperator(engine_name=FIREBOLT_ENGINE)
-    firebolt_stop_engine = FireboltStopEngineOperator(engine_name=FIREBOLT_ENGINE)
+    firebolt_start_engine = FireboltStartEngineOperator(
+        task_id="firebolt_start_engine", engine_name=FIREBOLT_ENGINE
+    )
+    firebolt_stop_engine = FireboltStopEngineOperator(
+        task_id="firebolt_stop_engine", engine_name=FIREBOLT_ENGINE
+    )
 
     firebolt_op_sql_create_table = FireboltOperator(
         task_id="firebolt_op_sql_create_table",
