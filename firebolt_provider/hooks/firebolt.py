@@ -52,15 +52,20 @@ class FireboltHook(DbApiHook):
         """Returns custom field behaviour"""
         return {
             "hidden_fields": ["port"],
-            "relabeling": {"schema": "Database", "host": "API End Point"},
+            "relabeling": {
+                "schema": "Database",
+                "login": "Username",
+                "extra": "Advanced Connection Properties",
+            },
             "placeholders": {
-                "host": "firebolt api end point",
-                "schema": "firebolt database",
-                "login": "firebolt userid",
-                "password": "password",
+                "host": "The host name of your Firebolt database",
+                "schema": "The database to connect to",
+                "login": "The email address you use to log into Firebolt",
+                "password": "Your password to log in to Firebolt",
                 "extra": json.dumps(
                     {
-                        "engine_name": "firebolt engine name",
+                        "account_name": "The Firebolt account to log in to",
+                        "engine_name": "The engine name to run SQL on",
                     },
                 ),
             },
@@ -80,13 +85,16 @@ class FireboltHook(DbApiHook):
         conn_id = getattr(self, self.conn_name_attr)
         conn = self.get_connection(conn_id)
         database = conn.schema
-        engine_name = conn.extra_dejson.get("engine_name", "")
+
+        engine_name = conn.extra_dejson.get("engine_name", None)
+        account_name = conn.extra_dejson.get("account_name", None)
         conn_config = {
             "username": conn.login,
             "password": conn.password or "",
             "api_endpoint": conn.host or DEFAULT_API_URL,
             "database": self.database or database,
             "engine_name": self.engine_name or engine_name,
+            "account_name": account_name,
         }
         return conn_config
 
