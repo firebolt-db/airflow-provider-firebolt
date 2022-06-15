@@ -81,6 +81,8 @@ class FireboltOperator(BaseOperator):
     :type engine_name: str
     """
 
+    template_fields = ("sql",)
+    template_ext = (".sql",)
     ui_color = "#b4e0ff"
 
     def __init__(
