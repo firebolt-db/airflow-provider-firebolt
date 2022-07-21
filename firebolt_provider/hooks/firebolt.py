@@ -99,6 +99,7 @@ class FireboltHook(DbApiHook):
             "engine_name": self.engine_name or engine_name,
             "engine_url": self.engine_url or engine_url,
             "account_name": account_name,
+            "use_token_cache": False,
         }
         return conn_config
 
