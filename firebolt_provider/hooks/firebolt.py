@@ -66,6 +66,7 @@ class FireboltHook(DbApiHook):
                     {
                         "account_name": "The Firebolt account to log in to",
                         "engine_name": "The engine name to run SQL on",
+                        "engine_url": "The engine url to use instead of engine_name",
                     },
                 ),
             },
@@ -76,6 +77,7 @@ class FireboltHook(DbApiHook):
         super().__init__(*args, **kwargs)
         self.database = kwargs.pop("database", None)
         self.engine_name = kwargs.pop("engine_name", None)
+        self.engine_url = kwargs.pop("engine_url", None)
 
     def _get_conn_params(self) -> Dict[str, Optional[str]]:
         """
@@ -88,12 +90,14 @@ class FireboltHook(DbApiHook):
 
         engine_name = conn.extra_dejson.get("engine_name", None)
         account_name = conn.extra_dejson.get("account_name", None)
+        engine_url = conn.extra_dejson.get("engine_url", None)
         conn_config = {
             "username": conn.login,
             "password": conn.password or "",
             "api_endpoint": conn.host or DEFAULT_API_URL,
             "database": self.database or database,
             "engine_name": self.engine_name or engine_name,
+            "engine_url": self.engine_url or engine_url,
             "account_name": account_name,
         }
         return conn_config
