@@ -92,6 +92,7 @@ class FireboltOperator(BaseOperator):
         parameters: Optional[Sequence] = None,
         database: Optional[str] = None,
         engine_name: Optional[str] = None,
+        engine_url: Optional[str] = None,
         autocommit: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -100,6 +101,7 @@ class FireboltOperator(BaseOperator):
         self.sql = sql
         self.database = database
         self.engine_name = engine_name
+        self.engine_url = engine_url
         self.parameters = parameters
         self.autocommit = autocommit
 
