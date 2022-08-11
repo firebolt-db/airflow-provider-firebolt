@@ -22,6 +22,7 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from airflow.hooks.dbapi import DbApiHook
 from firebolt.client import DEFAULT_API_URL
+from firebolt.client.auth import UsernamePassword
 from firebolt.common import Settings
 from firebolt.db import Connection, connect
 from firebolt.model.engine import Engine
@@ -127,16 +128,31 @@ class FireboltHook(DbApiHook):
     def get_conn(self) -> Connection:
         """Return Firebolt connection object"""
         conn_config = self._get_conn_params()
-        conn = connect(**conn_config)
+        username, password = conn_config["username"], conn_config["password"]
+        if not (username and password):
+            raise FireboltError("Either username or password is missing")
+
+        conn = connect(
+            auth=UsernamePassword(username=username, password=password),
+            api_endpoint=conn_config["api_endpoint"],
+            database=conn_config["database"],
+            engine_name=conn_config["engine_name"],
+            engine_url=conn_config["engine_url"],
+            account_name=conn_config["account_name"],
+        )
+
         return conn
 
     def get_resource_manager(self) -> ResourceManager:
         """Return Resource Manager"""
         conn_config = self._get_conn_params()
+        username, password = conn_config["username"], conn_config["password"]
+        if not (username and password):
+            raise FireboltError("Either username or password is missing")
+
         manager = ResourceManager(
             Settings(
-                user=conn_config["username"],
-                password=conn_config["password"],
+                auth=UsernamePassword(username=username, password=password),
                 server=conn_config["api_endpoint"],
                 default_region="us-east-1",
             )

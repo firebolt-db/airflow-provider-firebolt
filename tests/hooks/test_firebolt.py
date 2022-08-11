@@ -22,8 +22,6 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
-from firebolt.common import Settings
-
 from firebolt_provider.hooks.firebolt import FireboltHook
 
 
@@ -51,8 +49,7 @@ class TestFireboltHookConn(unittest.TestCase):
 
         self.db_hook.get_conn()
         mock_connect.assert_called_once_with(
-            username="user",
-            password="pw",
+            auth=mock.ANY,
             api_endpoint="api.app.firebolt.io",
             database="firebolt",
             engine_name="test",
@@ -66,8 +63,7 @@ class TestFireboltHookConn(unittest.TestCase):
 
         self.db_hook.get_conn()
         mock_connect.assert_called_once_with(
-            username="user",
-            password="pw",
+            auth=mock.ANY,
             api_endpoint="api.app.firebolt.io",
             database="firebolt",
             engine_name=None,
@@ -76,16 +72,17 @@ class TestFireboltHookConn(unittest.TestCase):
         )
 
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
-    def test_get_resource_manager(self, mock_rm):
+    @patch("firebolt_provider.hooks.firebolt.Settings")
+    @patch("firebolt_provider.hooks.firebolt.UsernamePassword")
+    def test_get_resource_manager(self, mock_auth, mock_settings, mock_rm):
         self.db_hook.get_resource_manager()
 
-        mock_rm.assert_called_once_with(
-            Settings(
-                user="user",
-                password="pw",
-                server="api.app.firebolt.io",
-                default_region="us-east-1",
-            )
+        mock_rm.assert_called_once()
+        mock_auth.assert_called_once_with(username="user", password="pw")
+        mock_settings.assert_called_once_with(
+            auth=mock.ANY,
+            server="api.app.firebolt.io",
+            default_region="us-east-1",
         )
 
 
