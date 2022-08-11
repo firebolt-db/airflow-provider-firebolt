@@ -20,7 +20,7 @@
 import json
 import unittest
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from firebolt.common import Settings
 
@@ -34,7 +34,6 @@ class TestFireboltHookConn(unittest.TestCase):
         self.connection.login = "user"
         self.connection.password = "pw"
         self.connection.schema = "firebolt"
-        self.connection.host = "api_endpoint"
 
         class UnitTestFireboltHook(FireboltHook):
             conn_name_attr = "firebolt_conn_id"
@@ -54,9 +53,10 @@ class TestFireboltHookConn(unittest.TestCase):
         mock_connect.assert_called_once_with(
             username="user",
             password="pw",
-            api_endpoint="api_endpoint",
+            api_endpoint="api.app.firebolt.io",
             database="firebolt",
             engine_name="test",
+            engine_url=None,
             account_name="firebolt",
         )
 
@@ -68,9 +68,10 @@ class TestFireboltHookConn(unittest.TestCase):
         mock_connect.assert_called_once_with(
             username="user",
             password="pw",
-            api_endpoint="api_endpoint",
+            api_endpoint="api.app.firebolt.io",
             database="firebolt",
             engine_name=None,
+            engine_url=None,
             account_name=None,
         )
 
@@ -82,7 +83,7 @@ class TestFireboltHookConn(unittest.TestCase):
             Settings(
                 user="user",
                 password="pw",
-                server="api_endpoint",
+                server="api.app.firebolt.io",
                 default_region="us-east-1",
             )
         )
@@ -125,10 +126,9 @@ class TestFireboltHook(unittest.TestCase):
 
     def test_get_ui_field_behaviour(self):
         widget = {
-            "hidden_fields": ["port"],
-            "relabeling": {"schema": "Database", "host": "API End Point"},
+            "hidden_fields": ["port", "host"],
+            "relabeling": {"schema": "Database"},
             "placeholders": {
-                "host": "firebolt api end point",
                 "schema": "firebolt database",
                 "login": "firebolt userid",
                 "password": "password",
@@ -157,3 +157,49 @@ class TestFireboltHook(unittest.TestCase):
         status, msg = self.db_hook.test_connection()
         assert status is False
         assert msg == "Connection Errors"
+
+    @mock.patch(
+        "firebolt_provider.hooks.firebolt.FireboltHook.get_resource_manager",
+    )
+    def test_engine_action_stop(self, mock_rm_call):
+        mock_rm = MagicMock()
+        mock_engine = MagicMock()
+
+        mock_rm_call.return_value = mock_rm
+        mock_rm.engines.get_by_name.return_value = mock_engine
+
+        self.db_hook.engine_action("engine_name", "stop")
+        mock_rm_call.assert_called_once()
+        mock_rm.engines.get_by_name.assert_called_once_with("engine_name")
+
+        mock_engine.stop.assert_called_once_with(wait_for_stop=True)
+
+    @mock.patch(
+        "firebolt_provider.hooks.firebolt.FireboltHook.get_resource_manager",
+    )
+    @mock.patch(
+        "firebolt_provider.hooks.firebolt.FireboltHook._get_conn_params",
+    )
+    @mock.patch(
+        "firebolt_provider.hooks.firebolt.get_default_database_engine",
+    )
+    def test_engine_action_start_default(
+        self, default_engine_call, conn_params_call, mock_rm_call
+    ):
+        mock_rm = MagicMock()
+        mock_engine = MagicMock()
+
+        conn_params_call.return_value = {
+            "database": "database_name",
+            "engine_name": None,
+            "engine_url": None,
+        }
+        mock_rm_call.return_value = mock_rm
+        default_engine_call.return_value = mock_engine
+
+        self.db_hook.engine_action(None, "start")
+        mock_rm_call.assert_called_once()
+        default_engine_call.assert_called_once_with(mock_rm, "database_name")
+        conn_params_call.assert_called_once()
+
+        mock_engine.start.assert_called_once_with(wait_for_startup=True)

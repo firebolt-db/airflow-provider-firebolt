@@ -18,9 +18,7 @@
 from typing import Any, List, Optional, Sequence, Union
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.models.abstractoperator import AbstractOperator
 from airflow.models.taskinstance import TaskInstanceKey
-from airflow.utils.context import Context
 
 from firebolt_provider.hooks.firebolt import FireboltHook
 
@@ -48,7 +46,7 @@ class RegistryLink(BaseOperatorLink):
 
     name = "Astronomer Registry"
 
-    def get_link(self, operator: AbstractOperator, ti_key: TaskInstanceKey) -> str:
+    def get_link(self, operator, ti_key: TaskInstanceKey) -> str:  # type: ignore
         """Get link to registry page."""
 
         registry_link = (
@@ -106,7 +104,7 @@ class FireboltOperator(BaseOperator):
     def get_db_hook(self) -> FireboltHook:
         return get_db_hook(self)
 
-    def execute(self, context: Context) -> Any:
+    def execute(self, context) -> Any:  # type: ignore
         """Run query on firebolt"""
         self.log.info("Executing: %s", self.sql)
 
@@ -120,7 +118,9 @@ class FireboltStartEngineOperator(BaseOperator):
 
     :param firebolt_conn_id: Firebolt connection id
     :type firebolt_conn_id: str
-    :param engine_name: name of engine, that should be started
+    :param engine_name: name of engine, that should be started, if not
+     specified the engine_name from parameters will be used, if it is also
+     not specified, will use the default engine of the database
     :type engine_name: str
     """
 
@@ -128,7 +128,7 @@ class FireboltStartEngineOperator(BaseOperator):
 
     def __init__(
         self,
-        engine_name: str,
+        engine_name: Optional[str] = None,
         firebolt_conn_id: str = "firebolt_default",
         **kwargs: Any,
     ) -> None:
@@ -137,17 +137,9 @@ class FireboltStartEngineOperator(BaseOperator):
         self.engine_name = engine_name
         self.database = None
 
-    def execute(self, context: Context) -> Any:
+    def execute(self, context) -> Any:  # type: ignore
         """Starts engine by its name"""
-        self.log.info("Start engine: %s", self.engine_name)
-
-        rm = get_db_hook(self).get_resource_manager()
-        engine = rm.engines.get_by_name(self.engine_name)
-
-        self.log.info(
-            "Found engine: %s, status: %s", engine.name, engine.current_status
-        )
-        engine.start(wait_for_startup=True)
+        get_db_hook(self).engine_action(self.engine_name, "start")
 
 
 class FireboltStopEngineOperator(BaseOperator):
@@ -156,7 +148,9 @@ class FireboltStopEngineOperator(BaseOperator):
 
     :param firebolt_conn_id: Firebolt connection id
     :type firebolt_conn_id: str
-    :param engine_name: name of engine, that should be stopped
+    :param engine_name: name of engine, that should be stopped, if not
+     specified the engine_name from parameters will be used, if it is also
+     not specified, will use the default engine of the database
     :type engine_name: str
     """
 
@@ -164,7 +158,7 @@ class FireboltStopEngineOperator(BaseOperator):
 
     def __init__(
         self,
-        engine_name: str,
+        engine_name: Optional[str] = None,
         firebolt_conn_id: str = "firebolt_default",
         **kwargs: Any,
     ) -> None:
@@ -173,14 +167,6 @@ class FireboltStopEngineOperator(BaseOperator):
         self.engine_name = engine_name
         self.database = None
 
-    def execute(self, context: Context) -> Any:
+    def execute(self, context) -> Any:  # type: ignore
         """Stops engine by its name"""
-        self.log.info("Stop engine: %s", self.engine_name)
-
-        rm = get_db_hook(self).get_resource_manager()
-        engine = rm.engines.get_by_name(self.engine_name)
-
-        self.log.info(
-            "Found engine: %s, status: %s", engine.name, engine.current_status
-        )
-        engine.stop(wait_for_stop=True)
+        get_db_hook(self).engine_action(self.engine_name, "stop")
