@@ -75,6 +75,11 @@ class TestFireboltHookConn(unittest.TestCase):
     @patch("firebolt_provider.hooks.firebolt.Settings")
     @patch("firebolt_provider.hooks.firebolt.UsernamePassword")
     def test_get_resource_manager(self, mock_auth, mock_settings, mock_rm):
+        self.connection.extra_dejson = {
+            "engine_name": "test",
+            "account_name": "firebolt",
+        }
+
         self.db_hook.get_resource_manager()
 
         mock_rm.assert_called_once()
@@ -82,6 +87,28 @@ class TestFireboltHookConn(unittest.TestCase):
         mock_settings.assert_called_once_with(
             auth=mock.ANY,
             server="api.app.firebolt.io",
+            default_region="us-east-1",
+        )
+
+    @patch("firebolt_provider.hooks.firebolt.ResourceManager")
+    @patch("firebolt_provider.hooks.firebolt.Settings")
+    @patch("firebolt_provider.hooks.firebolt.UsernamePassword")
+    def test_get_resource_manager_custom_api_endpoint(
+        self, mock_auth, mock_settings, mock_rm
+    ):
+        self.connection.extra_dejson = {
+            "engine_name": "test",
+            "account_name": "firebolt",
+            "api_endpoint": "api.dev.firebolt.io",
+        }
+
+        self.db_hook.get_resource_manager()
+
+        mock_rm.assert_called_once()
+        mock_auth.assert_called_once_with(username="user", password="pw")
+        mock_settings.assert_called_once_with(
+            auth=mock.ANY,
+            server="api.dev.firebolt.io",
             default_region="us-east-1",
         )
 

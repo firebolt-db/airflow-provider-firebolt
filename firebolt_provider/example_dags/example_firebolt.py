@@ -59,7 +59,7 @@ with DAG(
     firebolt_stop_engine = FireboltStopEngineOperator(task_id="firebolt_stop_engine")
     firebolt_op_sql_create_table = FireboltOperator(
         task_id="firebolt_op_sql_create_table",
-        sql="firebolt_op_sql_create_table.sql",
+        sql=SQL_CREATE_TABLE_STATEMENT,
     )
 
     firebolt_op_sql_list = FireboltOperator(

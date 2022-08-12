@@ -113,11 +113,12 @@ class FireboltHook(DbApiHook):
         if engine_name and "." in engine_name:
             engine_name, engine_url = None, engine_name
 
+        api_endpoint = conn.extra_dejson.get("api_endpoint", None)
         account_name = conn.extra_dejson.get("account_name", None)
         conn_config = {
             "username": conn.login,
             "password": conn.password or "",
-            "api_endpoint": DEFAULT_API_URL,
+            "api_endpoint": api_endpoint or DEFAULT_API_URL,
             "database": self.database or database,
             "engine_name": engine_name,
             "engine_url": engine_url,
@@ -185,7 +186,7 @@ class FireboltHook(DbApiHook):
         rm = self.get_resource_manager()
         if engine_name is None:
             if database_name is None:
-                raise FireboltError("Database cannot be not set")
+                raise FireboltError("Database must be set")
             engine = get_default_database_engine(rm, database_name)
         else:
             engine = rm.engines.get_by_name(engine_name)
