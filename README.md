@@ -19,6 +19,11 @@
 
 # Firebolt Provider for Apache Airflow
 
+[![Unit tests](https://github.com/firebolt-db/airflow-provider-firebolt/actions/workflows/pull-request.yml/badge.svg)](https://github.com/firebolt-db/airflow-provider-firebolt/actions/workflows/pull-request.yml)
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/yuryfirebolt/22e274394fed6421b6f5d5a2c8016fa3/raw/firebolt-airflow-provider-coverage.json
+)
+
+
 <img width="1114" alt="Screen Shot 2022-02-02 at 2 57 37 PM" src="https://user-images.githubusercontent.com/7674553/152251803-427f45b5-2160-4434-9f3e-431db4d3e79e.png">
 
 This is the provider package for the `firebolt` provider. All classes for this provider package are in the `firebolt_provider` Python package.
@@ -41,7 +46,7 @@ You can install this package via
 pip install airflow-provider-firebolt
 ```
 
-`airflow-provider-firebolt` requires `apache-airflow` 2.2.0+ and `firebolt-sdk` 0.2.0+.
+`airflow-provider-firebolt` requires `apache-airflow` 2.2.0+ and `firebolt-sdk` 0.9.2+.
 
 
 <a id="configuration"></a>
@@ -64,6 +69,11 @@ In the Airflow user interface, configure a Connection for Firebolt. Most of the 
 ### Operators
 
 [operators.firebolt.FireboltOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) runs a provided SQL script against Firebolt and returns results.
+
+[operators.firebolt.FireboltStartEngineOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) 
+[operators.firebolt.FireboltStopEngineOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) starts/stops the specified engine, and waits until it is actually started/stopped. If the `engine_name` is not specified, it will use the `engine_name` from the connection, if it also not specified it will start the default engine of the connection database. Note: start/stop operator requires actual engine name, if engine URL is specified instead, start/stop engine operators will not be able to handle it correctly.
+
+
 
 
 <a id="hooks"></a>

@@ -31,7 +31,6 @@ from firebolt_provider.operators.firebolt import (
 FIREBOLT_CONN_ID = "firebolt_conn_id"
 FIREBOLT_SAMPLE_TABLE = "sample_table"
 FIREBOLT_DATABASE = "sample_database"
-FIREBOLT_ENGINE = "sample_engine"
 
 # SQL commands
 SQL_CREATE_TABLE_STATEMENT = (
@@ -54,13 +53,8 @@ with DAG(
     tags=["example"],
     catchup=False,
 ) as dag:
-    firebolt_start_engine = FireboltStartEngineOperator(
-        task_id="firebolt_start_engine", engine_name=FIREBOLT_ENGINE
-    )
-    firebolt_stop_engine = FireboltStopEngineOperator(
-        task_id="firebolt_stop_engine", engine_name=FIREBOLT_ENGINE
-    )
-
+    firebolt_start_engine = FireboltStartEngineOperator(task_id="firebolt_start_engine")
+    firebolt_stop_engine = FireboltStopEngineOperator(task_id="firebolt_stop_engine")
     firebolt_op_sql_create_table = FireboltOperator(
         task_id="firebolt_op_sql_create_table",
         sql=SQL_CREATE_TABLE_STATEMENT,
