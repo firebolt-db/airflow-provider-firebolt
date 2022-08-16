@@ -62,7 +62,7 @@ jobs:
         with:
           auth: ${{ secrets.GIST_PAT }}
           gistID: 22e274394fed6421b6f5d5a2c8016fa3
-          filename: firebolt-cli-coverage.json
+          filename: firebolt-airflow-provider-coverage.json
           label: Coverage
           message: ${{steps.coverage.outputs.covered}}%
           color: ${{steps.coverage.outputs.colour}}
