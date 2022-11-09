@@ -55,6 +55,7 @@ class FireboltHook(DbApiHook):
     This hook requires the firebolt_conn_id connection. The firebolt login,
     password, and api_endpoint field must be setup in the connection.
     Other inputs can be defined in the connection or hook instantiation.
+    
     :param firebolt_conn_id: Reference to
         :ref:`Firebolt connection id<howto/connection:firebolt>`
     :type firebolt_conn_id: str
