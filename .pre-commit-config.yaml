@@ -23,7 +23,7 @@ repos:
           - --remove-unused-variables
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.9.3
+    rev: 5.12.0
     hooks:
       - id: isort
 
@@ -34,17 +34,18 @@ repos:
         language-version: 3.9
 
   - repo: https://github.com/dfm/black_nbconvert
-    rev: v0.3.0
+    rev: v0.4.0
     hooks:
       - id: black_nbconvert
 
-  - repo: https://gitlab.com/pycqa/flake8
+  - repo: https://github.com/PyCQA/flake8
     rev: 3.7.9
     hooks:
       - id: flake8
         additional_dependencies:
           - flake8-tidy-imports
           - flake8-quotes
+
   - repo: local
     hooks:
       - id: mypy

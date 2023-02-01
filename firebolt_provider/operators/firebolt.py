@@ -18,7 +18,7 @@
 from typing import Any, List, Optional, Sequence, Union
 
 from airflow.models import BaseOperator, BaseOperatorLink
-from airflow.models.taskinstance import TaskInstanceKey
+from airflow.utils.decorators import apply_defaults
 
 from firebolt_provider.hooks.firebolt import FireboltHook
 
@@ -46,7 +46,7 @@ class RegistryLink(BaseOperatorLink):
 
     name = "Astronomer Registry"
 
-    def get_link(self, operator, ti_key: TaskInstanceKey) -> str:  # type: ignore
+    def get_link(self, operator, ti_key) -> str:  # type: ignore
         """Get link to registry page."""
 
         registry_link = (
@@ -83,6 +83,7 @@ class FireboltOperator(BaseOperator):
     template_ext = (".sql",)
     ui_color = "#b4e0ff"
 
+    @apply_defaults
     def __init__(
         self,
         sql: Union[str, List[str]],

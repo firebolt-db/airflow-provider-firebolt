@@ -20,7 +20,7 @@
 import json
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
-from airflow.hooks.dbapi import DbApiHook
+from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
 from firebolt.client.auth import UsernamePassword
 from firebolt.common import Settings
@@ -28,6 +28,17 @@ from firebolt.db import Connection, connect
 from firebolt.model.engine import Engine
 from firebolt.service.manager import ResourceManager
 from firebolt.utils.exception import FireboltError
+
+if airflow_version.startswith("1.10"):
+    from airflow.hooks.dbapi_hook import DbApiHook  # type: ignore
+    from airflow.models.connection import Connection as AirflowConnection
+
+    # Show Firebolt in list of connections in UI
+    if ("firebolt", "Firebolt") not in AirflowConnection._types:
+        AirflowConnection._types.append(("firebolt", "Firebolt"))
+else:
+    # Airflow 2.0 path for the base class
+    from airflow.hooks.dbapi import DbApiHook
 
 
 def get_default_database_engine(rm: ResourceManager, database_name: str) -> Engine:
