@@ -166,6 +166,7 @@ class FireboltHook(DbApiHook):
             Settings(
                 auth=UsernamePassword(username=username, password=password),
                 server=conn_config["api_endpoint"],
+                account_name=conn_config["account_name"],
                 default_region="us-east-1",
             )
         )

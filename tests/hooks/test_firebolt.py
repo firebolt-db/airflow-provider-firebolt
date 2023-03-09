@@ -77,7 +77,6 @@ class TestFireboltHookConn(unittest.TestCase):
     def test_get_resource_manager(self, mock_auth, mock_settings, mock_rm):
         self.connection.extra_dejson = {
             "engine_name": "test",
-            "account_name": "firebolt",
         }
 
         self.db_hook.get_resource_manager()
@@ -86,6 +85,7 @@ class TestFireboltHookConn(unittest.TestCase):
         mock_auth.assert_called_once_with(username="user", password="pw")
         mock_settings.assert_called_once_with(
             auth=mock.ANY,
+            account_name=None,
             server="api.app.firebolt.io",
             default_region="us-east-1",
         )
@@ -109,6 +109,7 @@ class TestFireboltHookConn(unittest.TestCase):
         mock_settings.assert_called_once_with(
             auth=mock.ANY,
             server="api.dev.firebolt.io",
+            account_name="firebolt",
             default_region="us-east-1",
         )
 
