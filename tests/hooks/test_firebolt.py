@@ -64,10 +64,8 @@ class TestFireboltHookConn(unittest.TestCase):
         with self.assertRaises(FireboltError):
             self.db_hook.get_conn()
 
-        self.connection.extra_dejson = {
-            "account_name": "firebolt"
-        }
-        
+        self.connection.extra_dejson = {"account_name": "firebolt"}
+
         self.db_hook.get_conn()
 
         mock_connect.assert_called_once_with(
@@ -82,16 +80,14 @@ class TestFireboltHookConn(unittest.TestCase):
     @patch("firebolt_provider.hooks.firebolt.Settings")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
     def test_get_resource_manager(self, mock_auth, mock_settings, mock_rm):
-        self.connection.extra_dejson = {
-            "engine_name": "test"
-        }
+        self.connection.extra_dejson = {"engine_name": "test"}
 
         with self.assertRaises(FireboltError):
             self.db_hook.get_resource_manager()
-        
+
         self.connection.extra_dejson = {
             "engine_name": "test",
-            "account_name": "firebolt"
+            "account_name": "firebolt",
         }
 
         self.db_hook.get_resource_manager()
@@ -214,12 +210,10 @@ class TestFireboltHook(unittest.TestCase):
 
         mock_engine.stop.assert_called_once_with(wait_for_stop=True)
 
-
     @mock.patch(
         "firebolt_provider.hooks.firebolt.FireboltHook._get_conn_params",
     )
     def test_engine_action_start_default(self, conn_params_call):
-
         conn_params_call.return_value = {
             "database": "database_name",
             "engine_name": None,
