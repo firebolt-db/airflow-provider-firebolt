@@ -69,7 +69,6 @@ class FireboltHook(DbApiHook):
 
         return {
             "account_name": StringField(lazy_gettext("Account"), widget=BS3TextFieldWidget()),
-            "engine_name": StringField(lazy_gettext("Engine"), widget=BS3TextFieldWidget())
         }
 
     @staticmethod
@@ -82,7 +81,7 @@ class FireboltHook(DbApiHook):
                 "login": "Client ID",
                 "password": "Client Secret",
                 # Store engine name in host for better navigation on a connection list page
-                "host": "Engine Name",
+                "host": "Engine",
             },
             "placeholders": {
                 "schema": "The name of the Firebolt database to connect to",
