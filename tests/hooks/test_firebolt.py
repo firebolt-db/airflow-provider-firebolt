@@ -30,12 +30,11 @@ class TestFireboltHookConn(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.connection = mock.MagicMock()
-        self.connection.client_id = "client_id"
-        self.connection.client_secret = "client_secret"
-        self.connection.database = "firebolt"
-        self.connection.account_name = "firebolt"
-        self.connection.engine_name = "test"
-        self.connection.extra_dejson = {}
+        self.connection.login = "client_id"
+        self.connection.password = "client_secret"
+        self.connection.schema = "firebolt"
+        self.connection.host = "test"
+        self.connection.extra_dejson = {"account_name": "firebolt"}
 
         class UnitTestFireboltHook(FireboltHook):
             conn_name_attr = "firebolt_conn_id"
@@ -57,12 +56,12 @@ class TestFireboltHookConn(unittest.TestCase):
 
     @patch("firebolt_provider.hooks.firebolt.connect")
     def test_get_conn_no_account(self, mock_connect):
-        self.connection.account_name = None
+        self.connection.extra_dejson["account_name"] = None
 
         with self.assertRaises(FireboltError):
             self.db_hook.get_conn()
 
-        self.connection.account_name = "firebolt"
+        self.connection.extra_dejson["account_name"] = "firebolt"
 
         self.db_hook.get_conn()
 
@@ -91,12 +90,12 @@ class TestFireboltHookConn(unittest.TestCase):
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
     def test_get_resource_manager(self, mock_auth,  mock_rm):
-        self.connection.account_name = None
+        self.connection.extra_dejson["account_name"] = None
 
         with self.assertRaises(FireboltError):
             self.db_hook.get_resource_manager()
 
-        self.connection.account_name = "firebolt"
+        self.connection.extra_dejson["account_name"] = "firebolt"
 
         self.db_hook.get_resource_manager()
 

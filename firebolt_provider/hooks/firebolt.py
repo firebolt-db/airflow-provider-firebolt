@@ -69,9 +69,6 @@ class FireboltHook(DbApiHook):
 
         return {
             "account_name": StringField(lazy_gettext("Account"), widget=BS3TextFieldWidget()),
-            "client_id": StringField(lazy_gettext("Client ID"), widget=BS3TextFieldWidget()),
-            "client_secret": StringField(lazy_gettext("Client Secret"), widget=BS3TextFieldWidget()),
-            "database": StringField(lazy_gettext("Database"), widget=BS3TextFieldWidget()),
             "engine_name": StringField(lazy_gettext("Engine"), widget=BS3TextFieldWidget())
         }
 
@@ -79,14 +76,20 @@ class FireboltHook(DbApiHook):
     def get_ui_field_behaviour() -> Dict:
         """Returns custom field behaviour"""
         return {
-            "hidden_fields": ["port", "host", "schema", "login", "password"],
-            "relabeling": {},
+            "hidden_fields": ["port"],
+            "relabeling": {
+                "schema": "Database",
+                "login": "Client ID",
+                "password": "Client Secret",
+                # Store engine name in host for better navigation on a connection list page
+                "host": "Engine Name",
+            },
             "placeholders": {
-                "database": "The name of the Firebolt database to connect to",
-                "client_id": "The client id you use to log in to Firebolt",
-                "client_secret": "The client secret you use to log in to Firebolt",
+                "schema": "The name of the Firebolt database to connect to",
+                "login": "The client id you use to log in to Firebolt",
+                "password": "The client secret you use to log in to Firebolt",
                 "account_name": "The Firebolt account to log in to",
-                "engine_name": "The Firebolt engine name to run SQL on",
+                "host": "The Firebolt engine name to run SQL on",
             },
         }
 
@@ -103,24 +106,24 @@ class FireboltHook(DbApiHook):
         """
         conn_id = getattr(self, self.conn_name_attr)
         conn = self.get_connection(conn_id)
-        database = self.database or conn.database
+        database = self.database or conn.schema
 
-        engine_name = self.engine_name or conn.engine_name
-
+        engine_name = self.engine_name or conn.host
         api_endpoint = conn.extra_dejson.get("api_endpoint", DEFAULT_API_URL)
-        if not conn.account_name:
+        account_name = conn.extra_dejson.get("account_name", None)
+        if not account_name:
             raise FireboltError("Account name is missing")
 
-        if not (conn.client_id and conn.client_secret):
+        if not (conn.login and conn.password):
             raise FireboltError("Either cliend id or client secret is missing")
 
         conn_config = {
-            "client_id": conn.client_id,
-            "client_secret": conn.client_secret,
+            "client_id": conn.login,
+            "client_secret": conn.password,
             "api_endpoint": api_endpoint,
             "database": database,
             "engine_name": engine_name,
-            "account_name": conn.account_name,
+            "account_name": account_name,
         }
         return conn_config
 
