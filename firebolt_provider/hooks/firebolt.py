@@ -79,9 +79,8 @@ class FireboltHook(DbApiHook):
     def get_ui_field_behaviour() -> Dict:
         """Returns custom field behaviour"""
         return {
-            "hidden_fields": ["port", "host"],
-            "relabeling": {
-            },
+            "hidden_fields": ["port", "host", "schema", "login", "password"],
+            "relabeling": {},
             "placeholders": {
                 "database": "The name of the Firebolt database to connect to",
                 "client_id": "The client id you use to log in to Firebolt",
