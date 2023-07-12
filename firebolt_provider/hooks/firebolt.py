@@ -41,25 +41,6 @@ else:
     from airflow.hooks.dbapi import DbApiHook
 
 
-def get_default_database_engine(rm: ResourceManager, database_name: str) -> Engine:
-    """
-    Get the default engine of the database. If the default engine doesn't exists
-    raise FireboltError
-    """
-
-    database = rm.databases.get_by_name(name=database_name)
-    bindings = rm.bindings.get_many(database_id=database.database_id)
-
-    if len(bindings) == 0:
-        raise FireboltError("No engines attached to the database")
-
-    for binding in bindings:
-        if binding.is_default_engine:
-            return rm.engines.get(binding.engine_id)
-
-    raise FireboltError("No default engine is found.")
-
-
 class FireboltHook(DbApiHook):
     """
     A client to interact with Firebolt.
@@ -89,18 +70,13 @@ class FireboltHook(DbApiHook):
                 "schema": "Database",
                 "login": "Client ID",
                 "password": "Client Secret",
-                "extra": "Advanced Connection Properties",
             },
             "placeholders": {
                 "schema": "The name of the Firebolt database to connect to",
                 "login": "The client id you use to log in to Firebolt",
                 "password": "The client secret you use to log in to Firebolt",
-                "extra": json.dumps(
-                    {
-                        "account_name": "The Firebolt account to log in to",
-                        "engine_name": "The Firebolt engine name to run SQL on",
-                    },
-                ),
+                "account_name": "The Firebolt account to log in to",
+                "engine_name": "The Firebolt engine name to run SQL on",
             },
         }
 
@@ -159,12 +135,12 @@ class FireboltHook(DbApiHook):
         conn_config = self._get_conn_params()
 
         manager = ResourceManager(
-            Settings(
-                auth=ClientCredentials(conn_config["client_id"], conn_config["client_secret"]),
-                server=conn_config["api_endpoint"],
+                auth=ClientCredentials(
+                    conn_config["client_id"],
+                    conn_config["client_secret"]
+                ),
+                api_endpoint=conn_config["api_endpoint"],
                 account_name=conn_config["account_name"],
-                default_region="us-east-1",
-            )
         )
 
         return manager
@@ -184,19 +160,17 @@ class FireboltHook(DbApiHook):
                 "engine_name is not set, getting engine_name from connection config"
             )
             conn_config = self._get_conn_params()
-            database_name = conn_config.get("database")
-
             engine_name = conn_config.get("engine_name", None)
             if engine_name is None:
                 raise FireboltError("Engine name must be provided")
 
         rm = self.get_resource_manager()
-        engine = rm.engines.get_by_name(engine_name)
+        engine = rm.engines.get(engine_name)
 
         if action == "start":
-            engine.start(wait_for_startup=True)
+            engine.start()
         elif action == "stop":
-            engine.stop(wait_for_stop=True)
+            engine.stop()
         else:
             raise FireboltError(f"unknown action {action}")
 
