@@ -30,9 +30,12 @@ class TestFireboltHookConn(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.connection = mock.MagicMock()
-        self.connection.login = "client_id"
-        self.connection.password = "client_secret"
-        self.connection.schema = "firebolt"
+        self.connection.client_id = "client_id"
+        self.connection.client_secret = "client_secret"
+        self.connection.database = "firebolt"
+        self.connection.account_name = "firebolt"
+        self.connection.engine_name = "test"
+        self.connection.extra_dejson = {}
 
         class UnitTestFireboltHook(FireboltHook):
             conn_name_attr = "firebolt_conn_id"
@@ -43,11 +46,6 @@ class TestFireboltHookConn(unittest.TestCase):
 
     @patch("firebolt_provider.hooks.firebolt.connect")
     def test_get_conn(self, mock_connect):
-        self.connection.extra_dejson = {
-            "engine_name": "test",
-            "account_name": "firebolt",
-        }
-
         self.db_hook.get_conn()
         mock_connect.assert_called_once_with(
             auth=mock.ANY,
@@ -58,13 +56,13 @@ class TestFireboltHookConn(unittest.TestCase):
         )
 
     @patch("firebolt_provider.hooks.firebolt.connect")
-    def test_get_conn_no_extra(self, mock_connect):
-        self.connection.extra_dejson = {}
+    def test_get_conn_no_account(self, mock_connect):
+        self.connection.account_name = None
 
         with self.assertRaises(FireboltError):
             self.db_hook.get_conn()
 
-        self.connection.extra_dejson = {"account_name": "firebolt"}
+        self.connection.account_name = "firebolt"
 
         self.db_hook.get_conn()
 
@@ -72,57 +70,58 @@ class TestFireboltHookConn(unittest.TestCase):
             auth=mock.ANY,
             api_endpoint="api.app.firebolt.io",
             database="firebolt",
-            engine_name=None,
+            engine_name="test",
             account_name="firebolt",
         )
 
+    @patch("firebolt_provider.hooks.firebolt.connect")
+    def test_get_conn_custom_api_endpoint(self, mock_connect):
+        self.connection.extra_dejson["api_endpoint"] = "api.mock.firebolt.io"
+
+        self.db_hook.get_conn()
+
+        mock_connect.assert_called_once_with(
+            auth=mock.ANY,
+            api_endpoint="api.mock.firebolt.io",
+            database="firebolt",
+            engine_name="test",
+            account_name="firebolt",
+        )        
+
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
-    @patch("firebolt_provider.hooks.firebolt.Settings")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
-    def test_get_resource_manager(self, mock_auth, mock_settings, mock_rm):
-        self.connection.extra_dejson = {"engine_name": "test"}
+    def test_get_resource_manager(self, mock_auth,  mock_rm):
+        self.connection.account_name = None
 
         with self.assertRaises(FireboltError):
             self.db_hook.get_resource_manager()
 
-        self.connection.extra_dejson = {
-            "engine_name": "test",
-            "account_name": "firebolt",
-        }
+        self.connection.account_name = "firebolt"
 
         self.db_hook.get_resource_manager()
 
-        mock_rm.assert_called_once()
-        mock_auth.assert_called_once_with("client_id", "client_secret")
-        mock_settings.assert_called_once_with(
+        mock_rm.assert_called_once_with(
             auth=mock.ANY,
             account_name="firebolt",
-            server="api.app.firebolt.io",
-            default_region="us-east-1",
+            api_endpoint="api.app.firebolt.io",
         )
+        mock_auth.assert_called_once_with("client_id", "client_secret")
 
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
-    @patch("firebolt_provider.hooks.firebolt.Settings")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
     def test_get_resource_manager_custom_api_endpoint(
-        self, mock_auth, mock_settings, mock_rm
+        self, mock_auth, mock_rm
     ):
-        self.connection.extra_dejson = {
-            "engine_name": "test",
-            "account_name": "firebolt",
-            "api_endpoint": "api.dev.firebolt.io",
-        }
+        self.connection.extra_dejson["api_endpoint"] = "api.dev.firebolt.io"
 
         self.db_hook.get_resource_manager()
 
-        mock_rm.assert_called_once()
-        mock_auth.assert_called_once_with("client_id", "client_secret")
-        mock_settings.assert_called_once_with(
+        mock_rm.assert_called_once_with(
             auth=mock.ANY,
-            server="api.dev.firebolt.io",
+            api_endpoint="api.dev.firebolt.io",
             account_name="firebolt",
-            default_region="us-east-1",
         )
+        mock_auth.assert_called_once_with("client_id", "client_secret")
 
 
 class TestFireboltHook(unittest.TestCase):
@@ -202,13 +201,13 @@ class TestFireboltHook(unittest.TestCase):
         mock_engine = MagicMock()
 
         mock_rm_call.return_value = mock_rm
-        mock_rm.engines.get_by_name.return_value = mock_engine
+        mock_rm.engines.get.return_value = mock_engine
 
         self.db_hook.engine_action("engine_name", "stop")
         mock_rm_call.assert_called_once()
-        mock_rm.engines.get_by_name.assert_called_once_with("engine_name")
+        mock_rm.engines.get.assert_called_once_with("engine_name")
 
-        mock_engine.stop.assert_called_once_with(wait_for_stop=True)
+        mock_engine.stop.assert_called_once()
 
     @mock.patch(
         "firebolt_provider.hooks.firebolt.FireboltHook._get_conn_params",

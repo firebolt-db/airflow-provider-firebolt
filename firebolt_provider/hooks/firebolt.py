@@ -18,7 +18,7 @@
 #
 
 import json
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union, Any
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
@@ -62,19 +62,30 @@ class FireboltHook(DbApiHook):
     hook_name = "Firebolt"
 
     @staticmethod
+    def get_connection_form_widgets() -> Dict[str, Any]:
+        from flask_appbuilder.fieldwidgets import BS3TextAreaFieldWidget, BS3TextFieldWidget
+        from flask_babel import lazy_gettext
+        from wtforms import BooleanField, StringField
+
+        return {
+            "account_name": StringField(lazy_gettext("Account"), widget=BS3TextFieldWidget()),
+            "client_id": StringField(lazy_gettext("Client ID"), widget=BS3TextFieldWidget()),
+            "client_secret": StringField(lazy_gettext("Client Secret"), widget=BS3TextFieldWidget()),
+            "database": StringField(lazy_gettext("Database"), widget=BS3TextFieldWidget()),
+            "engine_name": StringField(lazy_gettext("Engine"), widget=BS3TextFieldWidget())
+        }
+
+    @staticmethod
     def get_ui_field_behaviour() -> Dict:
         """Returns custom field behaviour"""
         return {
             "hidden_fields": ["port", "host"],
             "relabeling": {
-                "schema": "Database",
-                "login": "Client ID",
-                "password": "Client Secret",
             },
             "placeholders": {
-                "schema": "The name of the Firebolt database to connect to",
-                "login": "The client id you use to log in to Firebolt",
-                "password": "The client secret you use to log in to Firebolt",
+                "database": "The name of the Firebolt database to connect to",
+                "client_id": "The client id you use to log in to Firebolt",
+                "client_secret": "The client secret you use to log in to Firebolt",
                 "account_name": "The Firebolt account to log in to",
                 "engine_name": "The Firebolt engine name to run SQL on",
             },
@@ -93,26 +104,24 @@ class FireboltHook(DbApiHook):
         """
         conn_id = getattr(self, self.conn_name_attr)
         conn = self.get_connection(conn_id)
-        database = conn.schema
+        database = self.database or conn.database
 
-        engine_name = self.engine_name or conn.extra_dejson.get("engine_name", None)
+        engine_name = self.engine_name or conn.engine_name
 
-        api_endpoint = conn.extra_dejson.get("api_endpoint", None)
-        account_name = conn.extra_dejson.get("account_name", None)
-        if not account_name:
+        api_endpoint = conn.extra_dejson.get("api_endpoint", DEFAULT_API_URL)
+        if not conn.account_name:
             raise FireboltError("Account name is missing")
 
-        client_id, client_secret = conn.login, conn.password
-        if not (client_id and client_secret):
+        if not (conn.client_id and conn.client_secret):
             raise FireboltError("Either cliend id or client secret is missing")
 
         conn_config = {
-            "client_id": client_id,
-            "client_secret": conn.password or "",
-            "api_endpoint": api_endpoint or DEFAULT_API_URL,
-            "database": self.database or database,
+            "client_id": conn.client_id,
+            "client_secret": conn.client_secret,
+            "api_endpoint": api_endpoint,
+            "database": database,
             "engine_name": engine_name,
-            "account_name": account_name,
+            "account_name": conn.account_name,
         }
         return conn_config
 
