@@ -17,14 +17,12 @@
 # under the License.
 #
 
-import json
-from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union, Any
 from collections import namedtuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
 from firebolt.client.auth import ClientCredentials
-from firebolt.common import Settings
 from firebolt.db import Connection, connect
 from firebolt.model.engine import Engine
 from firebolt.service.manager import ResourceManager
@@ -62,23 +60,30 @@ class FireboltHook(DbApiHook):
     conn_type = "firebolt"
     hook_name = "Firebolt"
 
-    ConnectionParameters = namedtuple("ConnectionParameters", [
-        "client_id",
-        "client_secret",
-        "api_endpoint",
-        "database",
-        "engine_name",
-        "account_name"
-    ])
+    ConnectionParameters = namedtuple(
+        "ConnectionParameters",
+        [
+            "client_id",
+            "client_secret",
+            "api_endpoint",
+            "database",
+            "engine_name",
+            "account_name",
+        ],
+    )
 
     @staticmethod
     def get_connection_form_widgets() -> Dict[str, Any]:
-        from flask_appbuilder.fieldwidgets import BS3TextAreaFieldWidget, BS3TextFieldWidget
-        from flask_babel import lazy_gettext
-        from wtforms import BooleanField, StringField
+        from flask_appbuilder.fieldwidgets import (  # type: ignore
+            BS3TextFieldWidget,
+        )
+        from flask_babel import lazy_gettext  # type: ignore
+        from wtforms import StringField  # type: ignore
 
         return {
-            "account_name": StringField(lazy_gettext("Account"), widget=BS3TextFieldWidget()),
+            "account_name": StringField(
+                lazy_gettext("Account"), widget=BS3TextFieldWidget()
+            ),
         }
 
     @staticmethod
@@ -90,7 +95,8 @@ class FireboltHook(DbApiHook):
                 "schema": "Database",
                 "login": "Client ID",
                 "password": "Client Secret",
-                # Store engine name in host for better navigation on a connection list page
+                # Store engine name in host for better navigation
+                # on a connection list page
                 "host": "Engine",
             },
             "placeholders": {
@@ -108,7 +114,7 @@ class FireboltHook(DbApiHook):
         self.database = kwargs.pop("database", None)
         self.engine_name = kwargs.pop("engine_name", None)
 
-    def _get_conn_params(self) -> ConnectionParameters:
+    def _get_conn_params(self) -> "ConnectionParameters":
         """
         One method to fetch connection params as a dict
         used in get_uri() and get_connection()
@@ -154,12 +160,9 @@ class FireboltHook(DbApiHook):
         conn_config = self._get_conn_params()
 
         manager = ResourceManager(
-                auth=ClientCredentials(
-                    conn_config.client_id,
-                    conn_config.client_secret
-                ),
-                api_endpoint=conn_config.api_endpoint,
-                account_name=conn_config.account_name,
+            auth=ClientCredentials(conn_config.client_id, conn_config.client_secret),
+            api_endpoint=conn_config.api_endpoint,
+            account_name=conn_config.account_name,
         )
 
         return manager
@@ -172,7 +175,7 @@ class FireboltHook(DbApiHook):
         else:
             raise FireboltError(f"unknown action {action}")
 
-    def _get_engine(self, engine_name: str) -> Engine:
+    def _get_engine(self, engine_name: Optional[str]) -> Engine:
         if engine_name is None:
             self.log.info(
                 "engine_name is not set, getting engine_name from connection config"
@@ -183,7 +186,7 @@ class FireboltHook(DbApiHook):
                 raise FireboltError("Engine name must be provided")
 
         rm = self.get_resource_manager()
-        return rm.engines.get(engine_name)        
+        return rm.engines.get(engine_name)
 
     def engine_action(self, engine_name: Optional[str], action: str) -> None:
         """

@@ -22,8 +22,9 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
-from firebolt_provider.hooks.firebolt import FireboltHook
 from firebolt.utils.exception import FireboltError
+
+from firebolt_provider.hooks.firebolt import FireboltHook
 
 
 class TestFireboltHookConn(unittest.TestCase):
@@ -85,11 +86,11 @@ class TestFireboltHookConn(unittest.TestCase):
             database="firebolt",
             engine_name="test",
             account_name="firebolt",
-        )        
+        )
 
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
-    def test_get_resource_manager(self, mock_auth,  mock_rm):
+    def test_get_resource_manager(self, mock_auth, mock_rm):
         self.connection.extra_dejson["account_name"] = None
 
         with self.assertRaises(FireboltError):
@@ -108,9 +109,7 @@ class TestFireboltHookConn(unittest.TestCase):
 
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
-    def test_get_resource_manager_custom_api_endpoint(
-        self, mock_auth, mock_rm
-    ):
+    def test_get_resource_manager_custom_api_endpoint(self, mock_auth, mock_rm):
         self.connection.extra_dejson["api_endpoint"] = "api.dev.firebolt.io"
 
         self.db_hook.get_resource_manager()
