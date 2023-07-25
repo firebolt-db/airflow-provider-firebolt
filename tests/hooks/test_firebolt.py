@@ -212,10 +212,14 @@ class TestFireboltHook(unittest.TestCase):
         "firebolt_provider.hooks.firebolt.FireboltHook._get_conn_params",
     )
     def test_engine_action_start_default(self, conn_params_call):
-        conn_params_call.return_value = {
-            "database": "database_name",
-            "engine_name": None,
-        }
+        conn_params_call.return_value = FireboltHook.ConnectionParameters(
+            client_id=None,
+            client_secret=None,
+            account_name=None,
+            database="database_name",
+            engine_name=None,
+            api_endpoint=None,
+        )
 
         with self.assertRaises(FireboltError):
             self.db_hook.engine_action(None, "start")

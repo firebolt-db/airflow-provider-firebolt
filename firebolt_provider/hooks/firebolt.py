@@ -19,6 +19,7 @@
 
 import json
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union, Any
+from collections import namedtuple
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
@@ -61,6 +62,15 @@ class FireboltHook(DbApiHook):
     conn_type = "firebolt"
     hook_name = "Firebolt"
 
+    ConnectionParameters = namedtuple("ConnectionParameters", [
+        "client_id",
+        "client_secret",
+        "api_endpoint",
+        "database",
+        "engine_name",
+        "account_name"
+    ])
+
     @staticmethod
     def get_connection_form_widgets() -> Dict[str, Any]:
         from flask_appbuilder.fieldwidgets import BS3TextAreaFieldWidget, BS3TextFieldWidget
@@ -98,7 +108,7 @@ class FireboltHook(DbApiHook):
         self.database = kwargs.pop("database", None)
         self.engine_name = kwargs.pop("engine_name", None)
 
-    def _get_conn_params(self) -> Dict[str, Optional[str]]:
+    def _get_conn_params(self) -> ConnectionParameters:
         """
         One method to fetch connection params as a dict
         used in get_uri() and get_connection()
@@ -116,26 +126,25 @@ class FireboltHook(DbApiHook):
         if not (conn.login and conn.password):
             raise FireboltError("Either cliend id or client secret is missing")
 
-        conn_config = {
-            "client_id": conn.login,
-            "client_secret": conn.password,
-            "api_endpoint": api_endpoint,
-            "database": database,
-            "engine_name": engine_name,
-            "account_name": account_name,
-        }
-        return conn_config
+        return self.ConnectionParameters(
+            client_id=conn.login,
+            client_secret=conn.password,
+            api_endpoint=api_endpoint,
+            database=database,
+            engine_name=engine_name,
+            account_name=account_name,
+        )
 
     def get_conn(self) -> Connection:
         """Return Firebolt connection object"""
         conn_config = self._get_conn_params()
 
         conn = connect(
-            auth=ClientCredentials(conn_config["client_id"], conn_config["client_secret"]),
-            api_endpoint=conn_config["api_endpoint"],
-            database=conn_config["database"],
-            engine_name=conn_config["engine_name"],
-            account_name=conn_config["account_name"],
+            auth=ClientCredentials(conn_config.client_id, conn_config.client_secret),
+            api_endpoint=conn_config.api_endpoint,
+            database=conn_config.database,
+            engine_name=conn_config.engine_name,
+            account_name=conn_config.account_name,
         )
 
         return conn
@@ -146,14 +155,35 @@ class FireboltHook(DbApiHook):
 
         manager = ResourceManager(
                 auth=ClientCredentials(
-                    conn_config["client_id"],
-                    conn_config["client_secret"]
+                    conn_config.client_id,
+                    conn_config.client_secret
                 ),
-                api_endpoint=conn_config["api_endpoint"],
-                account_name=conn_config["account_name"],
+                api_endpoint=conn_config.api_endpoint,
+                account_name=conn_config.account_name,
         )
 
         return manager
+
+    def _run_action(self, engine: Engine, action: str) -> None:
+        if action == "start":
+            engine.start()
+        elif action == "stop":
+            engine.stop()
+        else:
+            raise FireboltError(f"unknown action {action}")
+
+    def _get_engine(self, engine_name: str) -> Engine:
+        if engine_name is None:
+            self.log.info(
+                "engine_name is not set, getting engine_name from connection config"
+            )
+            conn_config = self._get_conn_params()
+            engine_name = conn_config.engine_name
+            if engine_name is None:
+                raise FireboltError("Engine name must be provided")
+
+        rm = self.get_resource_manager()
+        return rm.engines.get(engine_name)        
 
     def engine_action(self, engine_name: Optional[str], action: str) -> None:
         """
@@ -165,24 +195,7 @@ class FireboltHook(DbApiHook):
             action: either stop or start
 
         """
-        if engine_name is None:
-            self.log.info(
-                "engine_name is not set, getting engine_name from connection config"
-            )
-            conn_config = self._get_conn_params()
-            engine_name = conn_config.get("engine_name", None)
-            if engine_name is None:
-                raise FireboltError("Engine name must be provided")
-
-        rm = self.get_resource_manager()
-        engine = rm.engines.get(engine_name)
-
-        if action == "start":
-            engine.start()
-        elif action == "stop":
-            engine.stop()
-        else:
-            raise FireboltError(f"unknown action {action}")
+        self._run_action(self._get_engine(engine_name), action)
 
     def run(
         self,
