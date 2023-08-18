@@ -92,8 +92,8 @@ class FireboltHook(DbApiHook):
             },
             "placeholders": {
                 "schema": "The name of the Firebolt database to connect to",
-                "login": "The email address you use to log in to Firebolt",
-                "password": "The password you use to log in to Firebolt",
+                "login": "The email address you use to log in to Firebolt or service account ID",
+                "password": "The password you use to log in to Firebolt or service account Key",
                 "extra": json.dumps(
                     {
                         "account_name": "The Firebolt account to log in to",
