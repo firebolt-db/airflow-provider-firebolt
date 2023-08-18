@@ -22,7 +22,7 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
-from firebolt.client.auth import UsernamePassword
+from firebolt.client.auth import UsernamePassword, ServiceAccount
 from firebolt.common import Settings
 from firebolt.db import Connection, connect
 from firebolt.model.engine import Engine
@@ -127,25 +127,30 @@ class FireboltHook(DbApiHook):
         api_endpoint = conn.extra_dejson.get("api_endpoint", None)
         account_name = conn.extra_dejson.get("account_name", None)
         conn_config = {
-            "username": conn.login,
-            "password": conn.password or "",
             "api_endpoint": api_endpoint or DEFAULT_API_URL,
             "database": self.database or database,
             "engine_name": engine_name,
             "engine_url": engine_url,
             "account_name": account_name,
         }
+        if not (conn.login and conn.password):
+            raise FireboltError("Authentication information is missing")
+
+        if "@" not in conn.login:
+            # service account is always alphanumeric
+            conn_config["auth"] = ServiceAccount(conn.login, conn.password)
+        else:
+            # username is always an email
+            conn_config["auth"] = UsernamePassword(conn.login, conn.password)
+
         return conn_config
 
     def get_conn(self) -> Connection:
         """Return Firebolt connection object"""
         conn_config = self._get_conn_params()
-        username, password = conn_config["username"], conn_config["password"]
-        if not (username and password):
-            raise FireboltError("Either username or password is missing")
 
         conn = connect(
-            auth=UsernamePassword(username=username, password=password),
+            auth=conn_config["auth"],
             api_endpoint=conn_config["api_endpoint"],
             database=conn_config["database"],
             engine_name=conn_config["engine_name"],
@@ -158,13 +163,10 @@ class FireboltHook(DbApiHook):
     def get_resource_manager(self) -> ResourceManager:
         """Return Resource Manager"""
         conn_config = self._get_conn_params()
-        username, password = conn_config["username"], conn_config["password"]
-        if not (username and password):
-            raise FireboltError("Either username or password is missing")
 
         manager = ResourceManager(
             Settings(
-                auth=UsernamePassword(username=username, password=password),
+                auth=conn_config["auth"],
                 server=conn_config["api_endpoint"],
                 account_name=conn_config["account_name"],
                 default_region="us-east-1",
