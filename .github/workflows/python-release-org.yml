@@ -51,3 +51,4 @@ jobs:
         pypi-username: ${{ secrets.PYPI_USERNAME }}
         pypi-password: ${{ secrets.PYPI_PASSWORD }}
         version-file-path: firebolt_provider/__init__.py
+        main-branch: 0.x
