@@ -29,7 +29,7 @@ class TestFireboltHookConn(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.connection = mock.MagicMock()
-        self.connection.login = "user"
+        self.connection.login = "user@domain.com"
         self.connection.password = "pw"
         self.connection.schema = "firebolt"
 
@@ -82,7 +82,7 @@ class TestFireboltHookConn(unittest.TestCase):
         self.db_hook.get_resource_manager()
 
         mock_rm.assert_called_once()
-        mock_auth.assert_called_once_with(username="user", password="pw")
+        mock_auth.assert_called_once_with("user@domain.com", "pw")
         mock_settings.assert_called_once_with(
             auth=mock.ANY,
             account_name=None,
@@ -105,13 +105,27 @@ class TestFireboltHookConn(unittest.TestCase):
         self.db_hook.get_resource_manager()
 
         mock_rm.assert_called_once()
-        mock_auth.assert_called_once_with(username="user", password="pw")
+        mock_auth.assert_called_once_with("user@domain.com", "pw")
         mock_settings.assert_called_once_with(
             auth=mock.ANY,
             server="api.dev.firebolt.io",
             account_name="firebolt",
             default_region="us-east-1",
         )
+
+    @patch("firebolt_provider.hooks.firebolt.connect")
+    @patch("firebolt_provider.hooks.firebolt.ServiceAccount")
+    @patch("firebolt_provider.hooks.firebolt.UsernamePassword")
+    def test_get_conn_service_account(self, mock_username, mock_service_acc, mock_connect):
+        old_login = self.connection.login
+        self.connection.login = "aaclssjj-i88jsdsc-8jjjs8ha-8jjslknC"
+
+        self.db_hook.get_conn()
+        mock_connect.assert_called_once()
+        mock_username.assert_not_called()
+        mock_service_acc.assert_called_once_with("aaclssjj-i88jsdsc-8jjjs8ha-8jjslknC", "pw")
+
+        self.connection.login = old_login
 
 
 class TestFireboltHook(unittest.TestCase):
