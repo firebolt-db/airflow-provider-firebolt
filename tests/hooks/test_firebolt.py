@@ -22,6 +22,7 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
+from firebolt.client.auth import ClientCredentials, UsernamePassword
 from firebolt.utils.exception import FireboltError
 
 from firebolt_provider.hooks.firebolt import FireboltHook
@@ -54,15 +55,13 @@ class TestFireboltHookConn(unittest.TestCase):
             engine_name="test",
             account_name="firebolt",
         )
+        # Verify that the auth object is a ClientCredentials object
+        self.assertIsInstance(mock_connect.call_args[1]["auth"], ClientCredentials)
 
     @patch("firebolt_provider.hooks.firebolt.connect")
-    def test_get_conn_no_account(self, mock_connect):
-        self.connection.extra_dejson["account_name"] = None
-
-        with self.assertRaises(FireboltError):
-            self.db_hook.get_conn()
-
-        self.connection.extra_dejson["account_name"] = "firebolt"
+    def test_get_username_pass_conn(self, mock_connect):
+        self.connection.login = "usern@me.com"
+        self.connection.password = "password"
 
         self.db_hook.get_conn()
 
@@ -73,6 +72,8 @@ class TestFireboltHookConn(unittest.TestCase):
             engine_name="test",
             account_name="firebolt",
         )
+        # Verify that the auth object is a UsernamePassword object
+        self.assertIsInstance(mock_connect.call_args[1]["auth"], UsernamePassword)
 
     @patch("firebolt_provider.hooks.firebolt.connect")
     def test_get_conn_custom_api_endpoint(self, mock_connect):
@@ -91,11 +92,6 @@ class TestFireboltHookConn(unittest.TestCase):
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
     def test_get_resource_manager(self, mock_auth, mock_rm):
-        self.connection.extra_dejson["account_name"] = None
-
-        with self.assertRaises(FireboltError):
-            self.db_hook.get_resource_manager()
-
         self.connection.extra_dejson["account_name"] = "firebolt"
 
         self.db_hook.get_resource_manager()

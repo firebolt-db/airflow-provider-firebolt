@@ -22,9 +22,10 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
-from firebolt.client.auth import ClientCredentials
+from firebolt.client.auth import Auth, ClientCredentials, UsernamePassword
 from firebolt.db import Connection, connect
-from firebolt.model.engine import Engine
+from firebolt.model.V1.engine import Engine as EngineV1
+from firebolt.model.V2.engine import Engine as EngineV2
 from firebolt.service.manager import ResourceManager
 from firebolt.utils.exception import FireboltError
 
@@ -46,7 +47,7 @@ class FireboltHook(DbApiHook):
     This hook requires the firebolt_conn_id connection. The firebolt login,
     password, and api_endpoint field must be setup in the connection.
     Other inputs can be defined in the connection or hook instantiation.
-    
+
     :param firebolt_conn_id: Reference to
         :ref:`Firebolt connection id<howto/connection:firebolt>`
     :type firebolt_conn_id: str
@@ -102,8 +103,8 @@ class FireboltHook(DbApiHook):
             },
             "placeholders": {
                 "schema": "The name of the Firebolt database to connect to",
-                "login": "The client id you use to log in to Firebolt",
-                "password": "The client secret you use to log in to Firebolt",
+                "login": "The client id of your service account",
+                "password": "The client secret of your service account",
                 "account_name": "The Firebolt account to log in to",
                 "host": "The Firebolt engine name to run SQL on",
             },
@@ -127,11 +128,9 @@ class FireboltHook(DbApiHook):
         engine_name = self.engine_name or conn.host
         api_endpoint = conn.extra_dejson.get("api_endpoint", DEFAULT_API_URL)
         account_name = conn.extra_dejson.get("account_name", None)
-        if not account_name:
-            raise FireboltError("Account name is missing")
 
         if not (conn.login and conn.password):
-            raise FireboltError("Either cliend id or client secret is missing")
+            raise FireboltError("Authentication credentials are missing")
 
         return self.ConnectionParameters(
             client_id=conn.login,
@@ -145,9 +144,9 @@ class FireboltHook(DbApiHook):
     def get_conn(self) -> Connection:
         """Return Firebolt connection object"""
         conn_config = self._get_conn_params()
-
+        auth = _determine_auth(conn_config.client_id, conn_config.client_secret)
         conn = connect(
-            auth=ClientCredentials(conn_config.client_id, conn_config.client_secret),
+            auth=auth,
             api_endpoint=conn_config.api_endpoint,
             database=conn_config.database,
             engine_name=conn_config.engine_name,
@@ -168,7 +167,7 @@ class FireboltHook(DbApiHook):
 
         return manager
 
-    def _run_action(self, engine: Engine, action: str) -> None:
+    def _run_action(self, engine: Union[EngineV1, EngineV2], action: str) -> None:
         if action == "start":
             engine.start()
         elif action == "stop":
@@ -176,7 +175,7 @@ class FireboltHook(DbApiHook):
         else:
             raise FireboltError(f"unknown action {action}")
 
-    def _get_engine(self, engine_name: Optional[str]) -> Engine:
+    def _get_engine(self, engine_name: Optional[str]) -> Union[EngineV1, EngineV2]:
         if engine_name is None:
             self.log.info(
                 "engine_name is not set, getting engine_name from connection config"
@@ -240,3 +239,10 @@ class FireboltHook(DbApiHook):
         except Exception as e:
             return False, str(e)
         return True, "Connection successfully tested"
+
+
+def _determine_auth(key: str, secret: str, token_cache_flag: bool = True) -> Auth:
+    if "@" in key:
+        return UsernamePassword(key, secret, token_cache_flag)
+    else:
+        return ClientCredentials(key, secret, token_cache_flag)

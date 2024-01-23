@@ -46,20 +46,25 @@ You can install this package via
 pip install airflow-provider-firebolt
 ```
 
-`airflow-provider-firebolt` requires `apache-airflow` 2.2.0+ and `firebolt-sdk` 0.9.2+.
+`airflow-provider-firebolt` requires `apache-airflow` 2.0+ and `firebolt-sdk` 1.1+.
 
 
 <a id="configuration"></a>
 ## Configuration
 
-In the Airflow user interface, configure a Connection for Firebolt. Most of the Connection config fields will be left blank. Configure the following fields:
+In the Airflow user interface, configure a Connection for Firebolt. Configure the following fields:
 
 * `Conn Id`: `firebolt_conn_id`
 * `Conn Type`: `Firebolt`
-* `Login`: Firebolt Login
-* `Password`: Firebolt Password
+* `Client ID`: Service account ID
+* `Client Secret`: Service account secret
 * `Engine_Name`: Firebolt Engine Name
+* `Account`: Name of the account you're connecting to
 
+Client id and secret credentials can be obtained by registering a [Service account](https://docs.firebolt.io/godocs/Guides/managing-your-organization/service-accounts.html#manage-service-accounts).
+
+### Note
+If you're accessing Firebolt UI via `app.firebolt.io` then use Username and Password instead of Client ID and Client Secret to connect.
 
 <a id="modules"></a>
 ## Modules
@@ -70,7 +75,7 @@ In the Airflow user interface, configure a Connection for Firebolt. Most of the 
 
 [operators.firebolt.FireboltOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) runs a provided SQL script against Firebolt and returns results.
 
-[operators.firebolt.FireboltStartEngineOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) 
+[operators.firebolt.FireboltStartEngineOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py)
 [operators.firebolt.FireboltStopEngineOperator](https://github.com/firebolt-db/airflow-provider-firebolt/blob/main/firebolt_provider/operators/firebolt.py) starts/stops the specified engine, and waits until it is actually started/stopped. If the `engine_name` is not specified, it will use the `engine_name` from the connection, if it also not specified it will start the default engine of the connection database. Note: start/stop operator requires actual engine name, if engine URL is specified instead, start/stop engine operators will not be able to handle it correctly.
 
 
