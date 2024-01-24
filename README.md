@@ -54,12 +54,12 @@ pip install airflow-provider-firebolt
 
 In the Airflow user interface, configure a Connection for Firebolt. Configure the following fields:
 
-* `Conn Id`: `firebolt_conn_id`
-* `Conn Type`: `Firebolt`
-* `Client ID`: Service account ID
-* `Client Secret`: Service account secret
-* `Engine_Name`: Firebolt Engine Name
-* `Account`: Name of the account you're connecting to
+* `Conn Id`: `firebolt_conn_id`.
+* `Conn Type`: `Firebolt`.
+* `Client ID`: Service account ID.
+* `Client Secret`: Service account secret.
+* `Engine_Name`: Firebolt Engine Name.
+* `Account`: Name of the account you're connecting to.
 
 Client id and secret credentials can be obtained by registering a [Service account](https://docs.firebolt.io/godocs/Guides/managing-your-organization/service-accounts.html#manage-service-accounts).
 
