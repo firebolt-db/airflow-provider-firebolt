@@ -187,7 +187,7 @@ class FireboltHook(DbApiHook):
                 raise FireboltError("Engine name must be provided")
 
         rm = self.get_resource_manager()
-        return rm.engines.get(engine_name)
+        return rm.engines.get_by_name(engine_name)
 
     def engine_action(self, engine_name: Optional[str], action: str) -> None:
         """
