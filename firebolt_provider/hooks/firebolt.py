@@ -158,9 +158,10 @@ class FireboltHook(DbApiHook):
     def get_resource_manager(self) -> ResourceManager:
         """Return Resource Manager"""
         conn_config = self._get_conn_params()
+        auth = _determine_auth(conn_config.client_id, conn_config.client_secret)
 
         manager = ResourceManager(
-            auth=ClientCredentials(conn_config.client_id, conn_config.client_secret),
+            auth=auth,
             api_endpoint=conn_config.api_endpoint,
             account_name=conn_config.account_name,
         )
@@ -186,7 +187,7 @@ class FireboltHook(DbApiHook):
                 raise FireboltError("Engine name must be provided")
 
         rm = self.get_resource_manager()
-        return rm.engines.get(engine_name)
+        return rm.engines.get_by_name(engine_name)
 
     def engine_action(self, engine_name: Optional[str], action: str) -> None:
         """

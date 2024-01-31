@@ -101,7 +101,26 @@ class TestFireboltHookConn(unittest.TestCase):
             account_name="firebolt",
             api_endpoint="api.app.firebolt.io",
         )
-        mock_auth.assert_called_once_with("client_id", "client_secret")
+        mock_auth.assert_called_once_with("client_id", "client_secret", True)
+
+    @patch("firebolt_provider.hooks.firebolt.ResourceManager")
+    @patch("firebolt_provider.hooks.firebolt.UsernamePassword")
+    @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
+    def test_get_resource_manager_username_password(
+        self, mock_other_auth, mock_auth, mock_rm
+    ):
+        self.connection.login = "my@username.com"
+        self.connection.extra_dejson["account_name"] = "firebolt"
+
+        self.db_hook.get_resource_manager()
+
+        mock_rm.assert_called_once_with(
+            auth=mock.ANY,
+            account_name="firebolt",
+            api_endpoint="api.app.firebolt.io",
+        )
+        mock_auth.assert_called_once_with("my@username.com", "client_secret", True)
+        mock_other_auth.assert_not_called()
 
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
@@ -115,7 +134,7 @@ class TestFireboltHookConn(unittest.TestCase):
             api_endpoint="api.dev.firebolt.io",
             account_name="firebolt",
         )
-        mock_auth.assert_called_once_with("client_id", "client_secret")
+        mock_auth.assert_called_once_with("client_id", "client_secret", True)
 
 
 class TestFireboltHook(unittest.TestCase):
@@ -195,11 +214,11 @@ class TestFireboltHook(unittest.TestCase):
         mock_engine = MagicMock()
 
         mock_rm_call.return_value = mock_rm
-        mock_rm.engines.get.return_value = mock_engine
+        mock_rm.engines.get_by_name.return_value = mock_engine
 
         self.db_hook.engine_action("engine_name", "stop")
         mock_rm_call.assert_called_once()
-        mock_rm.engines.get.assert_called_once_with("engine_name")
+        mock_rm.engines.get_by_name.assert_called_once_with("engine_name")
 
         mock_engine.stop.assert_called_once()
 
