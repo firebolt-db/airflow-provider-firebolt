@@ -106,7 +106,9 @@ class TestFireboltHookConn(unittest.TestCase):
     @patch("firebolt_provider.hooks.firebolt.ResourceManager")
     @patch("firebolt_provider.hooks.firebolt.UsernamePassword")
     @patch("firebolt_provider.hooks.firebolt.ClientCredentials")
-    def test_get_resource_manager_username_password(self, mock_other_auth, mock_auth, mock_rm):
+    def test_get_resource_manager_username_password(
+        self, mock_other_auth, mock_auth, mock_rm
+    ):
         self.connection.login = "my@username.com"
         self.connection.extra_dejson["account_name"] = "firebolt"
 
