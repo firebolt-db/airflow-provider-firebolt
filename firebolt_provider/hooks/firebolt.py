@@ -62,6 +62,7 @@ class FireboltHook(DbApiHook):
     conn_type = "firebolt"
     hook_name = "Firebolt"
 
+
     ConnectionParameters = namedtuple(
         "ConnectionParameters",
         [
