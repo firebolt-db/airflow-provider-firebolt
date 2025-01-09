@@ -18,7 +18,7 @@
 #
 
 from collections import namedtuple
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL

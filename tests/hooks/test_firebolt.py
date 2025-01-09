@@ -157,9 +157,7 @@ class TestFireboltHook(unittest.TestCase):
         sql = "SQL"
         parameters = ("param1", "param2")
         self.db_hook.run(sql=sql, parameters=parameters)
-        self.conn.cursor().execute.assert_called_once_with(
-            sql, parameters
-        )
+        self.conn.cursor().execute.assert_called_once_with(sql, parameters)
 
     def test_run_with_single_query(self):
         sql = "SQL"
@@ -245,8 +243,18 @@ class TestFireboltHook(unittest.TestCase):
         assert res == [[(1, 2)], [(1, 2)]]
 
         sql = "SQL1; SQL2"
-        res = self.db_hook.run(sql, handler=lambda cur: cur.fetchall(), return_last=False, split_statements=True)
+        res = self.db_hook.run(
+            sql,
+            handler=lambda cur: cur.fetchall(),
+            return_last=False,
+            split_statements=True,
+        )
         assert res == [[(1, 2)], [(1, 2)]]
 
-        res = self.db_hook.run(sql, handler=lambda cur: cur.fetchall(), return_last=True, split_statements=True)
+        res = self.db_hook.run(
+            sql,
+            handler=lambda cur: cur.fetchall(),
+            return_last=True,
+            split_statements=True,
+        )
         assert res == [(1, 2)]
