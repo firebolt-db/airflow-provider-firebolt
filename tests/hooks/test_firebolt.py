@@ -157,20 +157,20 @@ class TestFireboltHook(unittest.TestCase):
         sql = "SQL"
         parameters = ("param1", "param2")
         self.db_hook.run(sql=sql, parameters=parameters)
-        self.conn.__enter__().cursor().__enter__().execute.assert_called_once_with(
+        self.conn.cursor().execute.assert_called_once_with(
             sql, parameters
         )
 
     def test_run_with_single_query(self):
         sql = "SQL"
         self.db_hook.run(sql)
-        self.conn.__enter__().cursor().__enter__().execute.assert_called_once_with(sql)
+        self.conn.cursor().execute.assert_called_once_with(sql)
 
     def test_run_multi_queries(self):
         sql = ["SQL1", "SQL2"]
         self.db_hook.run(sql, autocommit=True)
         for query in sql:
-            self.conn.__enter__().cursor().__enter__().execute.assert_any_call(query)
+            self.conn.cursor().execute.assert_any_call(query)
 
     def test_get_ui_field_behaviour(self):
         widget = {
