@@ -237,3 +237,16 @@ class TestFireboltHook(unittest.TestCase):
 
         with self.assertRaises(FireboltError):
             self.db_hook.engine_action(None, "start")
+
+    def test_run_returns_results(self):
+        sql = ["SQL1", "SQL2"]
+        self.cursor.fetchall.return_value = [(1, 2)]
+        res = self.db_hook.run(sql, handler=lambda cur: cur.fetchall())
+        assert res == [[(1, 2)], [(1, 2)]]
+
+        sql = "SQL1; SQL2"
+        res = self.db_hook.run(sql, handler=lambda cur: cur.fetchall(), return_last=False, split_statements=True)
+        assert res == [[(1, 2)], [(1, 2)]]
+
+        res = self.db_hook.run(sql, handler=lambda cur: cur.fetchall(), return_last=True, split_statements=True)
+        assert res == [(1, 2)]
