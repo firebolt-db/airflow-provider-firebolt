@@ -22,6 +22,7 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
+from airflow.providers.common.sql.hooks.handlers import fetch_all_handler
 from firebolt.client.auth import ClientCredentials, UsernamePassword
 from firebolt.utils.exception import FireboltError
 
@@ -239,13 +240,13 @@ class TestFireboltHook(unittest.TestCase):
     def test_run_returns_results(self):
         sql = ["SQL1", "SQL2"]
         self.cursor.fetchall.return_value = [(1, 2)]
-        res = self.db_hook.run(sql, handler=lambda cur: cur.fetchall())
+        res = self.db_hook.run(sql, handler=fetch_all_handler)
         assert res == [[(1, 2)], [(1, 2)]]
 
         sql = "SQL1; SQL2"
         res = self.db_hook.run(
             sql,
-            handler=lambda cur: cur.fetchall(),
+            handler=fetch_all_handler,
             return_last=False,
             split_statements=True,
         )
@@ -253,7 +254,7 @@ class TestFireboltHook(unittest.TestCase):
 
         res = self.db_hook.run(
             sql,
-            handler=lambda cur: cur.fetchall(),
+            handler=fetch_all_handler,
             return_last=True,
             split_statements=True,
         )
