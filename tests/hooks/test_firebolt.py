@@ -22,7 +22,7 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock, patch
 
-from airflow.providers.common.sql.hooks.handlers import fetch_all_handler
+from airflow.providers.common.sql.hooks.sql import fetch_all_handler
 from firebolt.client.auth import ClientCredentials, UsernamePassword
 from firebolt.utils.exception import FireboltError
 

@@ -38,7 +38,6 @@ jobs:
 
       - name: Run unit tests
         run: |
-          pip freeze
           pytest --cov=firebolt_provider/ tests/ --cov-report=xml
 
       - name: Upload coverage report
