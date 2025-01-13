@@ -111,13 +111,21 @@ class FireboltHook(DbApiHook):
             },
         }
 
-    def __init__(self, *args: Optional[str], **kwargs: Optional[str]) -> None:
+    def __init__(
+        self,
+        database: Optional[str] = None,
+        engine_name: Optional[str] = None,
+        timeout_seconds: Optional[float] = None,
+        fail_on_timeout: bool = True,
+        *args: Optional[str],
+        **kwargs: Optional[str],
+    ) -> None:
         """Firebolthook Constructor"""
         super().__init__(*args, **kwargs)
-        self.database = kwargs.pop("database", None)
-        self.engine_name = kwargs.pop("engine_name", None)
-        self.timeout_seconds = kwargs.pop("timeout_seconds", None)
-        self.fail_on_timeout = kwargs.pop("fail_on_timeout", True)
+        self.database = database
+        self.engine_name = engine_name
+        self.timeout_seconds = timeout_seconds
+        self.fail_on_timeout = fail_on_timeout
 
     def _get_conn_params(self) -> "ConnectionParameters":
         """

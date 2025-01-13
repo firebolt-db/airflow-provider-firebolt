@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, patch
 
 from airflow.providers.common.sql.hooks.sql import fetch_all_handler
 from firebolt.client.auth import ClientCredentials, UsernamePassword
-from firebolt.utils.exception import FireboltError
+from firebolt.utils.exception import FireboltError, QueryTimeoutError
 
 from firebolt_provider.hooks.firebolt import FireboltHook
 
@@ -259,3 +259,21 @@ class TestFireboltHook(unittest.TestCase):
             split_statements=True,
         )
         assert res == [(1, 2)]
+
+    def test_timeout(self):
+        self.db_hook.timeout_seconds = 1
+        self.cursor.execute.side_effect = QueryTimeoutError("Timeout")
+        with self.assertRaises(QueryTimeoutError):
+            self.db_hook.run("SELECT 1")
+
+        self.conn.cursor().execute.assert_called_once_with(
+            "SELECT 1", timeout_seconds=1
+        )
+        self.conn.cursor().execute.reset_mock()
+
+        self.db_hook.fail_on_timeout = False
+        assert self.db_hook.run("SELECT 1") is None
+
+        self.conn.cursor().execute.assert_called_once_with(
+            "SELECT 1", timeout_seconds=1
+        )

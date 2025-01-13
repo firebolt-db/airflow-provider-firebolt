@@ -38,6 +38,8 @@ def get_db_hook(
         firebolt_conn_id=self.firebolt_conn_id,
         database=self.database,
         engine_name=self.engine_name,
+        timeout_seconds=self.timeout_seconds,
+        fail_on_timeout=self.fail_on_timeout,
     )
 
 
@@ -141,6 +143,8 @@ class FireboltStartEngineOperator(BaseOperator):
         self.firebolt_conn_id = firebolt_conn_id
         self.engine_name = engine_name
         self.database = None
+        self.timeout_seconds = None
+        self.fail_on_timeout = False
 
     def execute(self, context) -> Any:  # type: ignore
         """Starts engine by its name"""
@@ -171,6 +175,8 @@ class FireboltStopEngineOperator(BaseOperator):
         self.firebolt_conn_id = firebolt_conn_id
         self.engine_name = engine_name
         self.database = None
+        self.timeout_seconds = None
+        self.fail_on_timeout = False
 
     def execute(self, context) -> Any:  # type: ignore
         """Stops engine by its name"""
