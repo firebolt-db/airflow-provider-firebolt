@@ -115,8 +115,8 @@ class FireboltHook(DbApiHook):
         self,
         database: Optional[str] = None,
         engine_name: Optional[str] = None,
-        timeout_seconds: Optional[float] = None,
-        fail_on_timeout: bool = True,
+        query_timeout: Optional[float] = None,
+        fail_on_query_timeout: bool = True,
         *args: Optional[str],
         **kwargs: Optional[str],
     ) -> None:
@@ -124,8 +124,8 @@ class FireboltHook(DbApiHook):
         super().__init__(*args, **kwargs)
         self.database = database
         self.engine_name = engine_name
-        self.timeout_seconds = timeout_seconds
-        self.fail_on_timeout = fail_on_timeout
+        self.query_timeout = query_timeout
+        self.fail_on_query_timeout = fail_on_query_timeout
 
     def _get_conn_params(self) -> "ConnectionParameters":
         """
@@ -189,9 +189,9 @@ class FireboltHook(DbApiHook):
             )
 
         if parameters:
-            cur.execute(sql_statement, parameters, timeout_seconds=self.timeout_seconds)
+            cur.execute(sql_statement, parameters, timeout_seconds=self.query_timeout)
         else:
-            cur.execute(sql_statement, timeout_seconds=self.timeout_seconds)
+            cur.execute(sql_statement, timeout_seconds=self.query_timeout)
 
         # According to PEP 249, this is -1 when query result is not applicable.
         if cur.rowcount >= 0:
@@ -201,7 +201,7 @@ class FireboltHook(DbApiHook):
         try:
             return super().run(*args, **kwargs)
         except QueryTimeoutError:
-            if self.fail_on_timeout:
+            if self.fail_on_query_timeout:
                 raise
             return None
 

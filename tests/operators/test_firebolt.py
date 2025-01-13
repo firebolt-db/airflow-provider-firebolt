@@ -50,8 +50,8 @@ class TestGetDBHook:
             (
                 {"sql": "Select * from test_table"},
                 {
-                    "timeout_seconds": None,
-                    "fail_on_timeout": True,
+                    "query_timeout": None,
+                    "fail_on_query_timeout": True,
                     "database": None,
                     "engine_name": None,
                     "firebolt_conn_id": "firebolt_default",
@@ -60,12 +60,12 @@ class TestGetDBHook:
             (
                 {
                     "sql": "Select * from test_table",
-                    "timeout_seconds": 10,
-                    "fail_on_timeout": False,
+                    "query_timeout": 10,
+                    "fail_on_query_timeout": False,
                 },
                 {
-                    "timeout_seconds": 10,
-                    "fail_on_timeout": False,
+                    "query_timeout": 10,
+                    "fail_on_query_timeout": False,
                     "database": None,
                     "engine_name": None,
                     "firebolt_conn_id": "firebolt_default",

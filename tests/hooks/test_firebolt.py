@@ -158,18 +158,20 @@ class TestFireboltHook(unittest.TestCase):
         sql = "SQL"
         parameters = ("param1", "param2")
         self.db_hook.run(sql=sql, parameters=parameters)
-        self.conn.cursor().execute.assert_called_once_with(sql, parameters)
+        self.conn.cursor().execute.assert_called_once_with(
+            sql, parameters, timeout_seconds=None
+        )
 
     def test_run_with_single_query(self):
         sql = "SQL"
         self.db_hook.run(sql)
-        self.conn.cursor().execute.assert_called_once_with(sql)
+        self.conn.cursor().execute.assert_called_once_with(sql, timeout_seconds=None)
 
     def test_run_multi_queries(self):
         sql = ["SQL1", "SQL2"]
         self.db_hook.run(sql, autocommit=True)
         for query in sql:
-            self.conn.cursor().execute.assert_any_call(query)
+            self.conn.cursor().execute.assert_any_call(query, timeout_seconds=None)
 
     def test_get_ui_field_behaviour(self):
         widget = {
@@ -261,7 +263,7 @@ class TestFireboltHook(unittest.TestCase):
         assert res == [(1, 2)]
 
     def test_timeout(self):
-        self.db_hook.timeout_seconds = 1
+        self.db_hook.query_timeout = 1
         self.cursor.execute.side_effect = QueryTimeoutError("Timeout")
         with self.assertRaises(QueryTimeoutError):
             self.db_hook.run("SELECT 1")
@@ -271,7 +273,7 @@ class TestFireboltHook(unittest.TestCase):
         )
         self.conn.cursor().execute.reset_mock()
 
-        self.db_hook.fail_on_timeout = False
+        self.db_hook.fail_on_query_timeout = False
         assert self.db_hook.run("SELECT 1") is None
 
         self.conn.cursor().execute.assert_called_once_with(
