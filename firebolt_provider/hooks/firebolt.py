@@ -18,18 +18,7 @@
 #
 
 from collections import namedtuple
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
@@ -50,8 +39,6 @@ if airflow_version.startswith("1.10"):
 else:
     # Airflow 2.0 path for the base class
     from airflow.hooks.dbapi import DbApiHook
-
-T = TypeVar("T")
 
 
 class FireboltHook(DbApiHook):
@@ -202,24 +189,9 @@ class FireboltHook(DbApiHook):
         if cur.rowcount >= 0:
             self.log.info("Rows affected: %s", cur.rowcount)
 
-    def run(
-        self,
-        sql: Union[str, Iterable[str]],
-        autocommit: bool = False,
-        parameters: Union[Iterable, Mapping[str, Any], None] = None,
-        handler: Optional[Callable[[Any], T]] = None,
-        split_statements: bool = False,
-        return_last: bool = True,
-    ) -> Union[tuple, list[tuple], list[Union[list[tuple], tuple]], None]:
+    def run(self, *args: Any, **kwargs: Any) -> Any:
         try:
-            return super().run(
-                sql=sql,
-                autocommit=autocommit,
-                parameters=parameters,
-                handler=handler,
-                split_statements=split_statements,
-                return_last=return_last,
-            )
+            return super().run(*args, **kwargs)
         except QueryTimeoutError:
             if self.fail_on_timeout:
                 raise
