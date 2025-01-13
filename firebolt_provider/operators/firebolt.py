@@ -92,6 +92,8 @@ class FireboltOperator(BaseOperator):
         database: Optional[str] = None,
         engine_name: Optional[str] = None,
         autocommit: bool = False,
+        timeout_seconds: Optional[float] = None,
+        fail_on_timeout: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -101,6 +103,8 @@ class FireboltOperator(BaseOperator):
         self.engine_name = engine_name
         self.parameters = parameters
         self.autocommit = autocommit
+        self.timeout_seconds = timeout_seconds
+        self.fail_on_timeout = fail_on_timeout
 
     def get_db_hook(self) -> FireboltHook:
         return get_db_hook(self)
