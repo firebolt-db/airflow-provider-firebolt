@@ -42,22 +42,45 @@ class TestFireboltOperator(unittest.TestCase):
         )
 
 
-@pytest.mark.parametrize(
-    "operator_class, kwargs",
-    [
-        (FireboltOperator, dict(sql="Select * from test_table")),
-    ],
-)
 class TestGetDBHook:
-    @mock.patch("firebolt_provider.operators.firebolt.get_db_hook")
+    @mock.patch("firebolt_provider.operators.firebolt.FireboltHook")
+    @pytest.mark.parametrize(
+        "kwargs, expected_kwargs",
+        [
+            (
+                {"sql": "Select * from test_table"},
+                {
+                    "query_timeout": None,
+                    "fail_on_query_timeout": True,
+                    "database": None,
+                    "engine_name": None,
+                    "firebolt_conn_id": "firebolt_default",
+                },
+            ),
+            (
+                {
+                    "sql": "Select * from test_table",
+                    "query_timeout": 10,
+                    "fail_on_query_timeout": False,
+                },
+                {
+                    "query_timeout": 10,
+                    "fail_on_query_timeout": False,
+                    "database": None,
+                    "engine_name": None,
+                    "firebolt_conn_id": "firebolt_default",
+                },
+            ),
+        ],
+    )
     def test_get_db_hook(
         self,
         mock_get_db_hook,
-        operator_class,
         kwargs,
+        expected_kwargs,
     ):
-        operator = operator_class(
+        operator = FireboltOperator(
             task_id="test_task_id", firebolt_conn_id="firebolt_default", **kwargs
         )
         operator.get_db_hook()
-        mock_get_db_hook.assert_called_once()
+        mock_get_db_hook.assert_called_once_with(**expected_kwargs)

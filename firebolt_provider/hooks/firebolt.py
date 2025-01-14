@@ -18,16 +18,16 @@
 #
 
 from collections import namedtuple
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from airflow.version import version as airflow_version
 from firebolt.client import DEFAULT_API_URL
 from firebolt.client.auth import Auth, ClientCredentials, UsernamePassword
-from firebolt.db import Connection, connect
+from firebolt.db import Connection, Cursor, connect
 from firebolt.model.V1.engine import Engine as EngineV1
 from firebolt.model.V2.engine import Engine as EngineV2
 from firebolt.service.manager import ResourceManager
-from firebolt.utils.exception import FireboltError
+from firebolt.utils.exception import FireboltError, QueryTimeoutError
 
 if airflow_version.startswith("1.10"):
     from airflow.hooks.dbapi_hook import DbApiHook  # type: ignore
@@ -111,11 +111,21 @@ class FireboltHook(DbApiHook):
             },
         }
 
-    def __init__(self, *args: Optional[str], **kwargs: Optional[str]) -> None:
+    def __init__(
+        self,
+        database: Optional[str] = None,
+        engine_name: Optional[str] = None,
+        query_timeout: Optional[float] = None,
+        fail_on_query_timeout: bool = True,
+        *args: Optional[str],
+        **kwargs: Optional[str],
+    ) -> None:
         """Firebolthook Constructor"""
         super().__init__(*args, **kwargs)
-        self.database = kwargs.pop("database", None)
-        self.engine_name = kwargs.pop("engine_name", None)
+        self.database = database
+        self.engine_name = engine_name
+        self.query_timeout = query_timeout
+        self.fail_on_query_timeout = fail_on_query_timeout
 
     def _get_conn_params(self) -> "ConnectionParameters":
         """
@@ -168,6 +178,32 @@ class FireboltHook(DbApiHook):
         )
 
         return manager
+
+    def _run_command(
+        self, cur: Cursor, sql_statement: str, parameters: Optional[List[str]]
+    ) -> None:
+        """Run a statement using an already open cursor."""
+        if self.log_sql:
+            self.log.info(
+                "Running statement: %s, parameters: %s", sql_statement, parameters
+            )
+
+        if parameters:
+            cur.execute(sql_statement, parameters, timeout_seconds=self.query_timeout)
+        else:
+            cur.execute(sql_statement, timeout_seconds=self.query_timeout)
+
+        # According to PEP 249, this is -1 when query result is not applicable.
+        if cur.rowcount >= 0:
+            self.log.info("Rows affected: %s", cur.rowcount)
+
+    def run(self, *args: Any, **kwargs: Any) -> Any:
+        try:
+            return super().run(*args, **kwargs)
+        except QueryTimeoutError:
+            if self.fail_on_query_timeout:
+                raise
+            return None
 
     def _run_action(self, engine: Union[EngineV1, EngineV2], action: str) -> None:
         if action == "start":

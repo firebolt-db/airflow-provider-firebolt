@@ -38,6 +38,8 @@ def get_db_hook(
         firebolt_conn_id=self.firebolt_conn_id,
         database=self.database,
         engine_name=self.engine_name,
+        query_timeout=self.query_timeout,
+        fail_on_query_timeout=self.fail_on_query_timeout,
     )
 
 
@@ -92,6 +94,8 @@ class FireboltOperator(BaseOperator):
         database: Optional[str] = None,
         engine_name: Optional[str] = None,
         autocommit: bool = False,
+        query_timeout: Optional[float] = None,
+        fail_on_query_timeout: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -101,6 +105,8 @@ class FireboltOperator(BaseOperator):
         self.engine_name = engine_name
         self.parameters = parameters
         self.autocommit = autocommit
+        self.query_timeout = query_timeout
+        self.fail_on_query_timeout = fail_on_query_timeout
 
     def get_db_hook(self) -> FireboltHook:
         return get_db_hook(self)
@@ -137,6 +143,8 @@ class FireboltStartEngineOperator(BaseOperator):
         self.firebolt_conn_id = firebolt_conn_id
         self.engine_name = engine_name
         self.database = None
+        self.query_timeout = None
+        self.fail_on_query_timeout = True
 
     def execute(self, context) -> Any:  # type: ignore
         """Starts engine by its name"""
@@ -167,6 +175,8 @@ class FireboltStopEngineOperator(BaseOperator):
         self.firebolt_conn_id = firebolt_conn_id
         self.engine_name = engine_name
         self.database = None
+        self.query_timeout = None
+        self.fail_on_query_timeout = True
 
     def execute(self, context) -> Any:  # type: ignore
         """Stops engine by its name"""
