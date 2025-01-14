@@ -144,7 +144,7 @@ class FireboltStartEngineOperator(BaseOperator):
         self.engine_name = engine_name
         self.database = None
         self.query_timeout = None
-        self.fail_on_query_timeout = False
+        self.fail_on_query_timeout = True
 
     def execute(self, context) -> Any:  # type: ignore
         """Starts engine by its name"""
@@ -176,7 +176,7 @@ class FireboltStopEngineOperator(BaseOperator):
         self.engine_name = engine_name
         self.database = None
         self.query_timeout = None
-        self.fail_on_query_timeout = False
+        self.fail_on_query_timeout = True
 
     def execute(self, context) -> Any:  # type: ignore
         """Stops engine by its name"""
