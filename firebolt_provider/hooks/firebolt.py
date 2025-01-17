@@ -17,6 +17,7 @@
 # under the License.
 #
 
+import logging
 from collections import namedtuple
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -39,6 +40,10 @@ if airflow_version.startswith("1.10"):
 else:
     # Airflow 2.0 path for the base class
     from airflow.hooks.dbapi import DbApiHook
+
+# Reduce noise from httpx logger
+httpx_logger = logging.getLogger("httpx")
+httpx_logger.setLevel(logging.WARNING)
 
 
 class FireboltHook(DbApiHook):
