@@ -10,7 +10,8 @@ def get_provider_info() -> Dict[str, Any]:
         "description": "A Firebolt provider for Apache Airflow.",
         "hook-class-names": ["firebolt_provider.hooks.firebolt.FireboltHook"],
         "connection-types": [
-            {   "connection-type": "firebolt",
+            {
+                "connection-type": "firebolt",
                 "hook-class-name": "firebolt_provider.hooks.firebolt.FireboltHook",
             }
         ],
