@@ -4,25 +4,36 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ] # Updates the coverage badge from the default branch only.
+
+permissions: {}
 
 jobs:
   check-title:
+    if: github.event_name != 'push' # There is no PR title to check on push.
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # The action comments on PRs with invalid titles.
     steps:
       - name: Check title name convention
-        uses: jef/conventional-commits-pr-action@v1
+        uses: jef/conventional-commits-pr-action@2ee589f151916f92da5e2887c38d5fe6402e803c # v1.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
 
   check-code:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: 3.8
 
@@ -32,7 +43,7 @@ jobs:
           pip install ".[dev]"
 
       - name: Run pre-commit checks
-        uses: pre-commit/action@v2.0.3
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         with:
           extra_args: --all-files
 
@@ -41,7 +52,7 @@ jobs:
           pytest --cov=firebolt_provider/ tests/ --cov-report=xml
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pytest-coverage-report
           path: coverage.xml
@@ -52,13 +63,15 @@ jobs:
         run: |
           fraction=$(sed -n 2p coverage.xml | sed 's/.*line-rate=\"\([0-9.]*\)\".*$/\1/')
           percentage=$(echo "scale=1; $fraction * 100" | bc -l)
-          percentage_whole=$(echo "${percentage%.*}")
-          colour=$(if [ $percentage_whole -ge 80 ]; then echo "green"; else echo "orange"; fi)
-          echo "colour=$colour" >>  $GITHUB_OUTPUT
-          echo "covered=$percentage_whole" >>  $GITHUB_OUTPUT
+          percentage_whole="${percentage%.*}"
+          colour=$(if [ "$percentage_whole" -ge 80 ]; then echo "green"; else echo "orange"; fi)
+          echo "colour=$colour" >> "$GITHUB_OUTPUT"
+          echo "covered=$percentage_whole" >> "$GITHUB_OUTPUT"
     
       - name: Create Coverage Badge
-        uses: schneegans/dynamic-badges-action@v1.4.0
+        # Only the default branch updates the badge, so PRs never use GIST_PAT.
+        if: github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@28b0fa8bdeb46170ac397105ece0c1fe58f68910 # v1.9.0
         continue-on-error: true
         with:
           auth: ${{ secrets.GIST_PAT }}
