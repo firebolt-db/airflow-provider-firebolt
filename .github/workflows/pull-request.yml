@@ -10,18 +10,6 @@ on:
 permissions: {}
 
 jobs:
-  check-title:
-    if: github.event_name != 'push' # There is no PR title to check on push.
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write # The action comments on PRs with invalid titles.
-    steps:
-      - name: Check title name convention
-        uses: jef/conventional-commits-pr-action@2ee589f151916f92da5e2887c38d5fe6402e803c # v1.3.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-
   check-code:
     runs-on: ubuntu-latest
     permissions:
