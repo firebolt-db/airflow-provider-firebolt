@@ -4,11 +4,14 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ] # Updates the coverage badge from the default branch only.
 
 permissions: {}
 
 jobs:
   check-title:
+    if: github.event_name != 'push' # There is no PR title to check on push.
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write # The action comments on PRs with invalid titles.
@@ -66,6 +69,8 @@ jobs:
           echo "covered=$percentage_whole" >> "$GITHUB_OUTPUT"
     
       - name: Create Coverage Badge
+        # Only the default branch updates the badge, so PRs never use GIST_PAT.
+        if: github.ref == 'refs/heads/main'
         uses: schneegans/dynamic-badges-action@28b0fa8bdeb46170ac397105ece0c1fe58f68910 # v1.9.0
         continue-on-error: true
         with:
